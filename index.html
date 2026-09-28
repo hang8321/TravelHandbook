@@ -1,0 +1,844 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>青海·甘肅大環線旅行行程</title>
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Vue.js 3 CDN -->
+  <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+  
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+TC:wght@300;400;500;700&family=Noto+Serif+TC:wght@500;700;900&display=swap" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            museum: {
+              bg: '#181513',        // 深漠暗褐背景
+              paper: '#231F1B',     // 典藏深陶卡片
+              sand: '#D4A373',      // 大漠金砂
+              terracotta: '#E07A5F',// 大漠赤陶紅
+              sage: '#81B29A',      // 高原鼠尾草綠
+              slate: '#708D81',     // 青海湖青灰
+              dark: '#EAE3D9',      // 亮暖砂白 (主要文字)
+              taupe: '#A3988A',     // 灰棕輔助色
+              border: '#383028'     // 深色手冊邊框線
+            }
+          },
+          fontFamily: {
+            serif: ['Noto Serif TC', 'Georgia', 'serif'],
+            sans: ['Inter', 'Noto Sans TC', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    body {
+      background-color: #181513;
+      color: #EAE3D9;
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .museum-texture {
+      background-image: radial-gradient(#EAE3D9 0.5px, transparent 0.5px);
+      background-size: 24px 24px;
+      opacity: 0.04;
+    }
+    .museum-card {
+      background-color: #231F1B;
+      border: 1px solid #383028;
+    }
+  </style>
+</head>
+<body class="font-sans antialiased min-h-screen pb-16 selection:bg-museum-terracotta selection:text-white">
+
+  <div id="app" class="max-w-md md:max-w-4xl lg:max-w-5xl mx-auto min-h-screen flex flex-col relative">
+    
+    <!-- Background Texture -->
+    <div class="fixed inset-0 museum-texture pointer-events-none z-0"></div>
+
+    <!-- Header Bar -->
+    <header class="relative z-10 bg-museum-paper border-b border-museum-border p-6 md:p-8 rounded-b-3xl shadow-lg transition-all">
+      <div class="flex flex-col md:flex-row justify-between items-start md:items-end gap-5">
+        <div>
+          <div class="flex flex-wrap items-center gap-2 mb-2">
+            <span class="px-2.5 py-0.5 rounded-full bg-museum-terracotta/20 text-museum-terracotta text-xs font-semibold tracking-wider border border-museum-terracotta/30">
+              2026年秋天
+            </span>
+            <span v-if="isDataLoadedFromAPI" class="px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 text-xs font-medium flex items-center gap-1 border border-emerald-500/30">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> Google Docs 實時同步
+            </span>
+          </div>
+
+          <h1 class="text-2xl md:text-4xl font-serif font-black tracking-tight text-museum-dark">
+            青甘大環線金秋之旅
+          </h1>
+          <p class="text-museum-taupe text-xs md:text-sm mt-1.5 font-medium flex items-center gap-2">
+            <span>澳門 ➔ 上海 ➔ 西寧 ➔ 敦煌 ➔ 金塔 ➔ 張掖 ➔ 返程</span>
+            <span class="text-museum-border">|</span>
+            <span>2,950 公里壯麗秋色</span>
+          </p>
+        </div>
+
+        <!-- Mode Toggle Tabs (Overview vs Daily) -->
+        <div class="flex p-1 bg-museum-bg rounded-2xl w-full md:w-auto border border-museum-border">
+          <button 
+            @click="activeView = 'overview'" 
+            :class="['flex-1 md:flex-initial px-4 py-2 rounded-xl text-xs md:text-sm font-semibold transition-all duration-200 flex items-center justify-center gap-2', activeView === 'overview' ? 'bg-museum-paper text-museum-dark border border-museum-border' : 'text-museum-taupe hover:text-museum-dark']">
+            <v-icon name="layout-dashboard" class="w-4 h-4"></v-icon>
+            總覽 Dashboard
+          </button>
+          <button 
+            @click="activeView = 'daily'" 
+            :class="['flex-1 md:flex-initial px-4 py-2 rounded-xl text-xs md:text-sm font-semibold transition-all duration-200 flex items-center justify-center gap-2', activeView === 'daily' ? 'bg-museum-paper text-museum-dark border border-museum-border' : 'text-museum-taupe hover:text-museum-dark']">
+            <v-icon name="calendar-days" class="w-4 h-4"></v-icon>
+            每日詳情
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- VIEW 1: OVERVIEW DASHBOARD -->
+    <main v-if="activeView === 'overview'" class="p-4 md:p-6 space-y-6 flex-1 z-10">
+      
+      <!-- Top KPI Cards -->
+      <div class="grid grid-cols-3 gap-3 md:gap-4">
+        <!-- Total Days Card -->
+        <div class="museum-card p-4 rounded-2xl flex flex-col justify-between relative overflow-hidden group">
+          <div class="text-museum-taupe text-xs font-semibold flex items-center gap-1.5 mb-2">
+            <v-icon name="clock" class="w-4 h-4 text-museum-sage"></v-icon> 總天數
+          </div>
+          <div class="text-2xl md:text-4xl font-serif font-bold text-museum-dark">
+            {{ totalDays }} <span class="text-xs md:text-sm font-sans font-normal text-museum-taupe">天 (D0-D10)</span>
+          </div>
+        </div>
+
+        <!-- Total Km Card -->
+        <div class="museum-card p-4 rounded-2xl flex flex-col justify-between relative overflow-hidden group">
+          <div class="text-museum-taupe text-xs font-semibold flex items-center gap-1.5 mb-2">
+            <v-icon name="navigation" class="w-4 h-4 text-museum-terracotta"></v-icon> 預計自駕
+          </div>
+          <div class="text-xl md:text-3xl font-serif font-bold text-museum-dark">
+            {{ itineraryData.totalKm }}
+          </div>
+        </div>
+
+        <!-- Date Range Card -->
+        <div class="museum-card p-4 rounded-2xl flex flex-col justify-between relative overflow-hidden">
+          <div class="text-museum-taupe text-xs font-semibold flex items-center gap-1.5 mb-2">
+            <v-icon name="calendar-days" class="w-4 h-4 text-museum-slate"></v-icon> 出發日期
+          </div>
+          <div class="text-xs md:text-sm font-semibold text-museum-dark truncate">
+            2026.10.16 - 10.26
+          </div>
+        </div>
+      </div>
+
+      <!-- Route Highlights Section -->
+      <div class="museum-card p-5 md:p-6 rounded-2xl">
+        <div class="flex justify-between items-center mb-3">
+          <h2 class="text-base font-serif font-bold text-museum-dark flex items-center gap-2">
+            <v-icon name="map-pin" class="w-5 h-5 text-museum-terracotta"></v-icon>
+            秋季青甘環線重點特色
+          </h2>
+          <span class="text-xs font-semibold bg-museum-sand/30 text-museum-dark px-3 py-1 rounded-full border border-museum-sand/50">
+            金秋限定版
+          </span>
+        </div>
+        <p class="text-xs md:text-sm text-museum-taupe leading-relaxed">
+          從澳門與上海飛抵西寧，自駕開啟大環線：首日擁抱青海湖秋色，茶卡鹽湖與德令哈柏樹山；深度體驗察爾汗鹽湖、烏素特水上雅丹與黑獨山月球地貌；直奔敦煌鳴沙山與莫高窟，解鎖金塔沙漠胡楊林絕美倒影，品嚐張掖炒炮仗與牛肉小飯，最終經祁連卓爾山返程。
+        </p>
+
+        <div class="flex flex-wrap gap-1.5 mt-4 pt-3 border-t border-museum-border text-xs text-museum-dark">
+          <span class="px-2.5 py-1 rounded-lg bg-museum-bg border border-museum-border">🌊 高原青海湖</span>
+          <span class="px-2.5 py-1 rounded-lg bg-museum-bg border border-museum-border">🌲 德令哈柏樹山</span>
+          <span class="px-2.5 py-1 rounded-lg bg-museum-bg border border-museum-border">💎 察爾汗鹽湖</span>
+          <span class="px-2.5 py-1 rounded-lg bg-museum-bg border border-museum-border">🖤 寂靜黑獨山</span>
+          <span class="px-2.5 py-1 rounded-lg bg-museum-bg border border-museum-border">🐪 鳴沙山月牙泉</span>
+          <span class="px-2.5 py-1 rounded-lg bg-museum-bg border border-museum-border">🍂 金塔沙漠胡楊林</span>
+          <span class="px-2.5 py-1 rounded-lg bg-museum-bg border border-museum-border">🎨 張掖七彩丹霞</span>
+          <span class="px-2.5 py-1 rounded-lg bg-museum-bg border border-museum-border">🏔 祁連卓爾山</span>
+        </div>
+      </div>
+
+      <!-- Search Bar -->
+      <div class="museum-card p-3.5 rounded-2xl flex items-center gap-3">
+        <v-icon name="search" class="w-5 h-5 text-museum-taupe ml-1"></v-icon>
+        <input 
+          v-model="searchQuery" 
+          type="text" 
+          placeholder="搜尋景點、飯店或美食（如：柏樹山、胡楊林、炒炮仗、全季）..." 
+          class="w-full bg-transparent text-sm text-museum-dark placeholder:text-museum-taupe/70 focus:outline-none">
+        <button v-if="searchQuery" @click="searchQuery = ''" class="text-xs text-museum-taupe hover:text-museum-dark px-2">清空</button>
+      </div>
+
+      <!-- Timeline Section -->
+      <div class="museum-card p-5 md:p-6 rounded-2xl">
+        <h2 class="text-base font-serif font-bold text-museum-dark mb-6 flex items-center gap-2">
+          <v-icon name="milestone" class="w-5 h-5 text-museum-slate"></v-icon>
+          {{ searchQuery ? '搜尋結果行程時間軸' : '全行程時間軸 Timeline' }}
+        </h2>
+
+        <div class="relative pl-6 space-y-6 before:absolute before:left-2.5 before:top-2 before:bottom-2 before:w-0.5 before:bg-museum-border">
+          <div 
+            v-for="(day, index) in filteredDays" 
+            :key="index"
+            @click="switchToDay(day.originalIndex)"
+            class="relative group cursor-pointer transition-all duration-200 hover:-translate-y-0.5">
+            
+            <div class="absolute -left-[1.85rem] top-1.5 w-5 h-5 rounded-full bg-museum-paper border-2 border-museum-sage group-hover:bg-museum-sage transition-colors duration-200 flex items-center justify-center shadow-sm">
+              <div class="w-1.5 h-1.5 rounded-full bg-museum-sage group-hover:bg-museum-paper"></div>
+            </div>
+
+            <div class="bg-museum-bg/70 group-hover:bg-museum-bg p-4 rounded-xl border border-museum-border transition-all">
+              <div class="flex items-center justify-between mb-1.5">
+                <div class="flex items-center gap-2">
+                  <span class="text-xs font-bold px-2 py-0.5 rounded bg-museum-slate text-white">
+                    DAY {{ day.dayNum }}
+                  </span>
+                  <span class="text-xs font-mono text-museum-sand">{{ day.date }}</span>
+                  <span class="text-xs font-semibold text-museum-terracotta">📍 {{ day.locationName }}</span>
+                </div>
+                <span class="text-xs text-museum-taupe flex items-center gap-1">
+                  <v-icon name="car" class="w-3.5 h-3.5"></v-icon> {{ day.km }}
+                </span>
+              </div>
+              <h3 class="text-sm md:text-base font-serif font-bold text-museum-dark group-hover:text-museum-terracotta transition-colors">
+                {{ day.title }}
+              </h3>
+              <p class="text-xs text-museum-taupe mt-1.5 line-clamp-2">
+                {{ day.highlights }}
+              </p>
+            </div>
+          </div>
+
+          <div v-if="filteredDays.length === 0" class="text-center py-8 text-museum-taupe text-sm">
+            未找到與「{{ searchQuery }}」相關的行程細節。
+          </div>
+        </div>
+      </div>
+
+    </main>
+
+    <!-- VIEW 2: DAILY ITINERARY DETAILS -->
+    <main v-if="activeView === 'daily'" class="flex-1 flex flex-col z-10">
+      
+      <!-- Sticky Day Tabs Header -->
+      <div class="sticky top-0 z-30 bg-museum-bg/95 backdrop-blur-md pt-3 pb-2 px-3 border-b border-museum-border">
+        <div 
+          ref="tabsContainer"
+          class="flex gap-2 overflow-x-auto no-scrollbar scroll-smooth py-1 px-1">
+          <button 
+            v-for="(day, index) in itineraryData.days" 
+            :key="index"
+            :ref="el => setTabRef(el, index)"
+            @click="selectedDayIndex = index"
+            :class="[
+              'px-3.5 py-2 rounded-xl text-xs md:text-sm font-semibold whitespace-nowrap transition-all duration-200 flex-shrink-0 flex flex-col items-center gap-0.5 border',
+              selectedDayIndex === index 
+                ? 'bg-museum-sage text-white border-museum-sage shadow-md scale-105' 
+                : 'bg-museum-paper text-museum-dark border-museum-border hover:bg-museum-bg'
+            ]">
+            <span>DAY {{ day.dayNum }} ({{ day.date.slice(5) }})</span>
+            <span class="text-[10px] opacity-80 font-normal">{{ day.locationName }}</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Main Container for Day Content -->
+      <div 
+        class="p-4 md:p-6 space-y-5 flex-1 touch-pan-y"
+        @touchstart="handleTouchStart"
+        @touchend="handleTouchEnd">
+        
+        <!-- Day Header Info -->
+        <div class="flex items-center justify-between">
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="text-xs font-bold text-museum-terracotta tracking-wider uppercase">DAY {{ currentDay.dayNum }} · {{ currentDay.date }}</span>
+            </div>
+            <h2 class="text-xl md:text-2xl font-serif font-bold text-museum-dark mt-0.5">{{ currentDay.title }}</h2>
+          </div>
+          <div class="text-right flex-shrink-0">
+            <span class="text-xs bg-museum-sand/30 text-museum-dark font-semibold px-3 py-1.5 rounded-full border border-museum-sand/50">
+              🚗 {{ currentDay.km }}
+            </span>
+          </div>
+        </div>
+
+        <!-- Weather Card Integration -->
+        <div class="museum-card p-4 rounded-2xl relative overflow-hidden">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-3.5">
+              <div class="w-12 h-12 rounded-xl bg-museum-bg flex items-center justify-center border border-museum-border shadow-inner text-museum-dark">
+                <v-icon v-if="loadingWeather" name="loader-2" class="w-6 h-6 animate-spin text-museum-sage"></v-icon>
+                <v-icon v-else :name="currentWeather.icon" class="w-7 h-7 text-amber-400"></v-icon>
+              </div>
+              <div>
+                <div class="text-xs font-semibold text-museum-taupe flex items-center gap-1.5">
+                  <span>{{ currentDay.locationName }} 天氣預報</span>
+                  <span class="text-[10px] text-museum-taupe/70 font-mono">({{ currentDay.lat }}, {{ currentDay.lon }})</span>
+                </div>
+                <div class="text-lg font-bold text-museum-dark flex items-baseline gap-2 mt-0.5">
+                  <span v-if="loadingWeather" class="text-xs text-museum-taupe font-normal">載入最新氣象...</span>
+                  <template v-else>
+                    <span class="font-serif text-xl">{{ currentWeather.tempMax }}°C</span>
+                    <span class="text-xs text-museum-taupe font-normal">/ {{ currentWeather.tempMin }}°C</span>
+                    <span class="text-xs font-semibold text-museum-sage ml-1">{{ currentWeather.label }}</span>
+                  </template>
+                </div>
+              </div>
+            </div>
+
+            <div v-if="!loadingWeather" class="text-right text-xs text-museum-taupe space-y-1 hidden sm:block">
+              <div class="flex items-center justify-end gap-1">
+                <v-icon name="wind" class="w-3.5 h-3.5"></v-icon> 風速 {{ currentWeather.windSpeed }} km/h
+              </div>
+              <div class="flex items-center justify-end gap-1">
+                <v-icon name="droplets" class="w-3.5 h-3.5 text-blue-400"></v-icon> 降雨率 {{ currentWeather.precipitation }}%
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Detailed Activity List Cards -->
+        <div class="space-y-3.5">
+          <div class="flex items-center justify-between">
+            <h3 class="text-sm font-serif font-bold text-museum-dark flex items-center gap-2">
+              <v-icon name="list-checks" class="w-4 h-4 text-museum-sage"></v-icon> 詳細行程規劃
+            </h3>
+            <span class="text-[11px] text-museum-taupe">點擊景點 📍 可連動地圖與小紅書攻略</span>
+          </div>
+
+          <div 
+            v-for="(detail, idx) in currentDay.details" 
+            :key="idx"
+            class="museum-card p-4 rounded-2xl flex flex-col md:flex-row md:items-start gap-3 transition-all hover:border-museum-taupe/40">
+            
+            <!-- Time Indicator Badge -->
+            <div class="flex items-center gap-2 md:w-28 flex-shrink-0">
+              <span class="w-2 h-2 rounded-full bg-museum-terracotta"></span>
+              <span class="text-xs font-mono font-bold text-museum-dark bg-museum-bg border border-museum-border px-2.5 py-1 rounded-md">
+                {{ detail.time }}
+              </span>
+            </div>
+
+            <!-- Detail Content -->
+            <div class="flex-1 space-y-2">
+              <div class="text-xs md:text-sm text-museum-dark leading-relaxed">
+                <span v-html="formatDetailText(detail.text)"></span>
+              </div>
+
+              <!-- Note Tip Box -->
+              <div v-if="detail.note" class="bg-museum-sand/15 border-l-2 border-museum-sand p-2.5 rounded-r-lg text-xs text-museum-dark flex items-start gap-2 mt-2">
+                <v-icon name="lightbulb" class="w-4 h-4 text-amber-500 flex-shrink-0 mt-0.5"></v-icon>
+                <span class="leading-relaxed">{{ detail.note }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </main>
+
+    <!-- Floating Action Buttons -->
+    <div class="fixed bottom-6 right-5 z-40 flex flex-col gap-3">
+      <button 
+        @click="fetchDataAndWeather" 
+        class="p-3.5 bg-museum-slate text-white rounded-full shadow-lg hover:bg-museum-dark transition-all duration-200 flex items-center justify-center active:scale-95 group border border-white/20"
+        title="重新整理數據與天氣">
+        <v-icon name="refresh-cw" class="w-5 h-5 group-hover:rotate-180 transition-transform duration-500"></v-icon>
+      </button>
+
+      <a 
+        :href="googleDocsEditUrl" 
+        target="_blank" 
+        class="p-3.5 bg-museum-terracotta text-white rounded-full shadow-lg hover:bg-red-800 transition-all duration-200 flex items-center justify-center active:scale-95 border border-white/20"
+        title="開啟 Google Docs 編輯原始行程">
+        <v-icon name="file-edit" class="w-5 h-5"></v-icon>
+      </a>
+    </div>
+
+    <!-- Museum Footer -->
+    <footer class="py-6 text-center text-xs text-museum-taupe border-t border-museum-border mt-auto relative z-10">
+      <p class="font-serif">2026 金秋青甘大環線 · 旅遊隨行典藏</p>
+    </footer>
+
+  </div>
+
+  <script>
+    const GOOGLE_SCRIPT_URL = "YOUR_GAS_WEB_APP_URL";
+    const GOOGLE_DOCS_EDIT_URL = "https://docs.google.com/document/d/1fpnWw6Z13iffozliyOQaJ9JczdYKcRQql3y-tmwNBg0/edit?tab=t.0";
+
+    // Standardized Itinerary Data according to User Query
+    const UPDATED_ITINERARY_DATA = {
+      totalKm: "2,950 km",
+      updatedAt: "2026-10-16 點對點更新",
+      days: [
+        {
+          dayNum: "0",
+          date: "2026.10.16",
+          locationName: "澳門 · 上海",
+          title: "澳門 ➔ 上海 (飛行接駁)",
+          lat: 22.15,
+          lon: 113.57,
+          km: "✈️ 飛行接駁",
+          highlights: "夜間於澳門國際機場出發，飛抵上海過夜，準備次日早班機飛往西寧。",
+          details: [
+            { time: "19:45", text: "✈️ 抵達 📍 [澳門國際機場]，辦理登機與行李托手續。" },
+            { time: "21:30", text: "✈️ 搭乘航班飛往上海，抵達 📍 [上海浦東國際機場] / 虹橋機場。" },
+            { time: "23:50", text: "🏨 入住 📍 [上海浦東機場周邊酒店]，充分休息迎接次日高原之旅。" }
+          ]
+        },
+        {
+          dayNum: "1",
+          date: "2026.10.17",
+          locationName: "上海 · 西寧 · 青海湖",
+          title: "上海 ➔ 西寧 ➔ 青海湖",
+          lat: 36.62,
+          lon: 100.48,
+          km: "150 km",
+          highlights: "飛抵西寧辦理租車取車，享用青海特色早餐，驅車前往青海湖欣賞湛藍高原湖水與秋色。",
+          details: [
+            { time: "04:30", text: "✈️ 抵達 📍 [上海浦東國際機場]，辦理前往西寧的登機手續。" },
+            { time: "09:30", text: "抵達 📍 [西寧曹家堡國際機場]，辦理自駕取車手續。" },
+            { time: "10:30", text: "🍚 早午餐：享用西寧特色美食（手抓羊肉、釀皮、甜醅）。" },
+            { time: "12:00", text: "🚗 驅車約 2 小時前往 📍 [青海湖]，遊覽高原明珠，欣賞湛藍湖水與沿途金秋景色。" },
+            { time: "18:00", text: "🍚 晚餐：享用當地特色餐飲。" },
+            { time: "19:30", text: "🏨 入住 📍 [青海湖周邊酒店/民宿]。" }
+          ]
+        },
+        {
+          dayNum: "2",
+          date: "2026.10.18",
+          locationName: "青海湖 · 茶卡 · 德令哈",
+          title: "青海湖 ➔ 茶卡鹽湖 ➔ 柏樹山 ➔ 德令哈",
+          lat: 37.37,
+          lon: 97.36,
+          km: "380 km",
+          highlights: "天空之鏡茶卡鹽湖，德令哈柏樹山高山景觀，晚餐特色坑鍋羊肉，入住全季富氧酒店。",
+          details: [
+            { time: "08:00", text: "🏨 酒店辦理退房。" },
+            { time: "08:30", text: "🚗 驅車約 2.5 小時前往 📍 [茶卡鹽湖]。" },
+            { time: "11:00", text: "📷 遊覽 📍 [茶卡鹽湖]，體驗「天空之鏡」的夢幻鏡面景致。", note: "建議穿著鮮豔服裝，準備太陽眼鏡與防曬裝備。" },
+            { time: "13:00", text: "🍚 午餐：茶卡鎮周邊餐廳用餐。" },
+            { time: "14:30", text: "🚗 驅車約 2.5 小時前往德令哈 📍 [柏樹山]。" },
+            { time: "17:00", text: "🌲 參觀 📍 [柏樹山]，欣賞獨特的高山古柏樹群與陡峭自然風光。" },
+            { time: "19:00", text: "🍚 晚餐：品嚐德令哈特色 📍 [坑鍋羊肉]。" },
+            { time: "20:30", text: "🏨 入住 📍 [全季富氧酒店(德令哈巴音河畔店)]。" }
+          ]
+        },
+        {
+          dayNum: "3",
+          date: "2026.10.19",
+          locationName: "德令哈 · 察爾汗 · 大柴旦",
+          title: "德令哈 ➔ 察爾汗鹽湖 ➔ 大柴旦",
+          lat: 37.85,
+          lon: 95.35,
+          km: "350 km",
+          highlights: "穿越柴達木盆地，觀賞百里萬丈鹽橋與翡翠般湛綠的察爾汗鹽湖水面。",
+          details: [
+            { time: "08:30", text: "🏨 酒店辦理退房。" },
+            { time: "09:00", text: "🚗 驅車約 4.5 小時前往 📍 [察爾汗鹽湖]。" },
+            { time: "13:30", text: "💎 參觀 📍 [察爾汗鹽湖]，觀賞百里鹽橋與翡翠般的綠色鹽池景象。" },
+            { time: "16:30", text: "🚗 驅車約 1.5 小時前往大柴旦鎮。" },
+            { time: "18:30", text: "🏨 入住 📍 [大柴旦鎮酒店]，晚間可在鎮上享用清真美食。" }
+          ]
+        },
+        {
+          dayNum: "4",
+          date: "2026.10.20",
+          locationName: "大柴旦 · 水上雅丹",
+          title: "大柴旦 ➔ 水上雅丹 (日落沉浸)",
+          lat: 37.85,
+          lon: 93.68,
+          km: "240 km",
+          highlights: "探訪世界上唯一的水上雅丹地貌，拍攝壯麗的戈壁雅丹湖泊日落餘暉。",
+          details: [
+            { time: "09:00", text: "🏨 酒店辦理退房。" },
+            { time: "09:30", text: "🚗 驅車約 3.5 小時前往雅丹腹地。" },
+            { time: "13:00", text: "📍 [烏素特水上雅丹] 景區深度探索，拍攝世界上獨一無二的水上風蝕雅丹群。" },
+            { time: "17:30", text: "📷 捕捉水上雅丹黃昏落日金色霞光。", note: "西北戈壁日夜溫差極大，日落後請及時穿著保暖羽絨衣。" },
+            { time: "19:00", text: "🏨 入住 📍 [烏素特水上雅丹景區內/周邊酒店]。" }
+          ]
+        },
+        {
+          dayNum: "5",
+          date: "2026.10.21",
+          locationName: "水上雅丹 · 黑獨山 · 冷湖",
+          title: "水上雅丹 ➔ 黑獨山 ➔ 冷湖",
+          lat: 38.74,
+          lon: 93.33,
+          km: "200 km",
+          highlights: "深入冷湖黑獨山，踏足宛如月球表面的寂靜黑石山丘與極地風貌。",
+          details: [
+            { time: "08:30", text: "🏨 酒店辦理退房。" },
+            { time: "09:00", text: "🚗 驅車約 4 小時穿越荒涼美感的戈壁公路。" },
+            { time: "13:00", text: "🖤 抵達 📍 [黑獨山]，體驗宛如月球表面的寂靜黑石地貌與水墨荒漠景象。", note: "保護脆弱的地貌環境，請步行探索，嚴禁車輛駛入黑石保護區。" },
+            { time: "17:00", text: "🚗 驅車前往冷湖鎮。" },
+            { time: "18:30", text: "🏨 入住 📍 [冷湖鎮酒店]。" }
+          ]
+        },
+        {
+          dayNum: "6",
+          date: "2026.10.22",
+          locationName: "冷湖 · 敦煌",
+          title: "冷湖 ➔ 當金山 ➔ 敦煌鳴沙山月牙泉",
+          lat: 40.14,
+          lon: 94.66,
+          km: "390 km",
+          highlights: "翻越當金山進入甘肅，沙漠騎駱駝，登鳴沙山欣賞月牙泉日落奇觀。",
+          details: [
+            { time: "08:00", text: "🏨 酒店辦理退房。" },
+            { time: "08:30", text: "🚗 驅車約 5.5 小時，翻越 📍 [當金山] 進入甘肅敦煌。" },
+            { time: "14:00", text: "抵達敦煌市區，飯店稍作整理整裝。" },
+            { time: "16:00", text: "🐪 前往 📍 [鳴沙山月牙泉]，感受沙漠奇觀，體驗騎駱駝、滑沙與大漠日落。", note: "請做好防沙措施，相機與手機建議安裝防沙套。" },
+            { time: "20:00", text: "🏨 入住 📍 [鳴沙山月牙泉景區附近酒店]，晚上可逛沙州夜市。" }
+          ]
+        },
+        {
+          dayNum: "7",
+          date: "2026.10.23",
+          locationName: "敦煌 · 酒泉",
+          title: "敦煌莫高窟 ➔ 酒泉",
+          lat: 39.73,
+          lon: 98.49,
+          km: "380 km",
+          highlights: "參觀千佛洞莫高窟壁畫藝術，沿河西走廊驅車前往酒泉入住。",
+          details: [
+            { time: "08:00", text: "🏨 酒店辦理退房。" },
+            { time: "08:30", text: "🎨 參觀 📍 [莫高窟]，感受千年的石窟藝術瑰寶與壁畫史詩。", note: "⚠️ 莫高窟實行嚴格預約制，請務必提前在官網預約門票。" },
+            { time: "13:00", text: "🍚 敦煌市區享用午餐（推薦驢肉黃麵）。" },
+            { time: "14:00", text: "🚗 驅車約 5 小時穿過河西走廊前往酒泉市。" },
+            { time: "19:00", text: "🏨 入住 📍 [酒泉市酒店]。" }
+          ]
+        },
+        {
+          dayNum: "8",
+          date: "2026.10.24",
+          locationName: "酒泉 · 金塔 · 張掖",
+          title: "酒泉 ➔ 金塔胡楊林 ➔ 張掖七彩丹霞",
+          lat: 38.93,
+          lon: 100.45,
+          km: "310 km",
+          highlights: "金塔沙漠胡楊林金秋黃葉倒影，張掖七彩丹霞夕陽，必吃張掖炒炮仗與牛肉小飯。",
+          details: [
+            { time: "08:00", text: "🏨 酒店辦理退房。" },
+            { time: "08:30", text: "🍂 前往 📍 [金塔沙漠胡楊林景區]，欣賞金秋十月金黃燦爛的胡楊水影與沙漠風情。" },
+            { time: "12:30", text: "🍚 享用金塔/酒泉特色午餐。" },
+            { time: "13:30", text: "🚗 驅車約 3 小時前往張掖。" },
+            { time: "16:30", text: "🎨 觀賞 📍 [張掖七彩丹霞]，捕捉上帝翻倒調色盤一般的彩色丘陵與夕陽天光。" },
+            { time: "19:30", text: "🍚 必吃美食：體驗張掖在地小吃 📍 [張掖炒炮仗] 與 📍 [張掖牛肉小飯]！" },
+            { time: "20:30", text: "🏨 入住 📍 [張掖市酒店]。" }
+          ]
+        },
+        {
+          dayNum: "9",
+          date: "2026.10.25",
+          locationName: "張掖 · 祁連",
+          title: "張掖 ➔ 卓爾山 ➔ 祁連",
+          lat: 38.17,
+          lon: 100.24,
+          km: "290 km",
+          highlights: "經扁都口重返青海，登上東方小瑞士卓爾山遠眺阿咪東索雪山。",
+          details: [
+            { time: "08:30", text: "🏨 酒店辦理退房。" },
+            { time: "09:00", text: "🚗 驅車約 3 小時穿過扁都口前往祁連縣。" },
+            { time: "13:00", text: "🏔 登頂 📍 [卓爾山]，遠眺阿咪東索雪山，俯瞰丹霞赤壁與高山草原交織的絕景。" },
+            { time: "17:00", text: "🍚 享用祁連藏式茶餐與牦牛肉湯鍋。" },
+            { time: "18:30", text: "🏨 入住 📍 [祁連縣酒店]。" }
+          ]
+        },
+        {
+          dayNum: "10",
+          date: "2026.10.26",
+          locationName: "祁連 · 西寧 · 返程",
+          title: "祁連 ➔ 西寧曹家堡機場 ➔ 上海 ➔ 返程",
+          lat: 36.62,
+          lon: 101.77,
+          km: "280 km (✈️ 返程)",
+          highlights: "晨起退房驅車返回西寧曹家堡機場辦理還車，圓滿結束青甘大環線金秋之旅。",
+          details: [
+            { time: "07:00", text: "🏨 酒店辦理退房，早起啟程返西寧。" },
+            { time: "07:30", text: "🚗 驅車約 3.5 小時返回西寧曹家堡機場。" },
+            { time: "11:00", text: "📍 [西寧曹家堡國際機場] 辦理還車手續及登機手續。" },
+            { time: "13:00", text: "✈️ 搭乘航班飛往 📍 [上海浦東國際機場] / 返程目的地。" },
+            { time: "18:00", text: "✈️ 順利返抵家門，結束 11 天壯麗的青甘大環線金秋之旅！" }
+          ]
+        }
+      ]
+    };
+
+    function parseWeatherCode(code) {
+      if (code === 0) return { label: "晴朗", icon: "sun" };
+      if (code >= 1 && code <= 3) return { label: "多雲", icon: "cloud-sun" };
+      if (code >= 45 && code <= 48) return { label: "有霧", icon: "cloud-fog" };
+      if (code >= 51 && code <= 67) return { label: "陣雨/小雨", icon: "cloud-rain" };
+      if (code >= 71 && code <= 77) return { label: "降雪", icon: "snowflake" };
+      if (code >= 80 && code <= 82) return { label: "暴雨", icon: "cloud-lightning" };
+      return { label: "晴間多雲", icon: "sun" };
+    }
+
+    const VIcon = {
+      props: ['name'],
+      template: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block" v-html="paths[name] || ''"></svg>`,
+      setup() {
+        const paths = {
+          'layout-dashboard': '<rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/>',
+          'calendar-days': '<rect width="18" height="18" x="3" y="4" rx="2"/><path d="M8 2v4"/><path d="M16 2v4"/><path d="M3 10h18"/><path d="M8 14h.01"/><path d="M12 14h.01"/><path d="M16 14h.01"/><path d="M8 18h.01"/><path d="M12 18h.01"/><path d="M16 18h.01"/>',
+          'clock': '<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>',
+          'navigation': '<polygon points="3 11 22 2 13 21 11 13 3 11"/>',
+          'refresh-cw': '<path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/>',
+          'map-pin': '<path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/>',
+          'milestone': '<path d="M18 6H5a2 2 0 0 0-2 2v3a2 2 0 0 0 2 2h13l4-3.5L18 6Z"/><path d="M12 13v8"/><path d="M12 3v3"/>',
+          'car': '<path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.5 2.8C2.1 11 2 11.5 2 12v4c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><path d="M9 17h6"/><circle cx="17" cy="17" r="2"/>',
+          'loader-2': '<path d="M21 12a9 9 0 1 1-6.219-8.56"/>',
+          'list-checks': '<path d="m3 17 2 2 4-4"/><path d="m3 7 2 2 4-4"/><path d="M13 6h8"/><path d="M13 12h8"/><path d="M13 18h8"/>',
+          'lightbulb': '<path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/><path d="M9 18h6"/><path d="M10 22h4"/>',
+          'file-edit': '<path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>',
+          'search': '<circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>',
+          'wind': '<path d="M17.7 7.7a2.5 2.5 0 1 1 1.8 4.3H2"/><path d="M9.6 4.6A2 2 0 1 1 11 8H2"/><path d="M12.6 19.4A2 2 0 1 0 14 16H2"/>',
+          'droplets': '<path d="M7 16.3c0 2 1.6 3.7 3.5 3.7s3.5-1.7 3.5-3.7c0-2-3.5-5.3-3.5-5.3s-3.5 3.3-3.5 5.3z"/><path d="M14 9c0 1.1.9 2 2 2s2-.9 2-2c0-1.1-2-3-2-3s-2 1.9-2 3z"/>',
+          'sun': '<circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/>',
+          'cloud-sun': '<path d="M12 2v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="M20 12h2"/><path d="m19.07 4.93-1.41 1.41"/><path d="M15.947 12.65a4 4 0 0 0-5.925-4.128"/><path d="M13 22H7a5 5 0 1 1 4.9-6H13a3 3 0 0 1 0 6Z"/>',
+          'cloud-fog': '<path d="M4 14h16"/><path d="M4 18h16"/><path d="M4 10h16"/>',
+          'cloud-rain': '<path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"/><path d="M16 14v6"/><path d="M8 14v6"/><path d="M12 16v6"/>',
+          'snowflake': '<line x1="2" x2="22" y1="12" y2="12"/><line x1="12" x2="12" y1="2" y2="22"/><path d="m20 16-4-4 4-4"/><path d="m4 8 4 4-4 4"/><path d="m16 4-4 4-4-4"/><path d="m8 20 4-4 4 4"/>',
+          'cloud-lightning': '<path d="M6 16.326A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 .5 8.973"/><path d="m13 12-3 5h4l-3 5"/>'
+        };
+        return { paths };
+      }
+    };
+
+    const { createApp, ref, computed, onMounted, watch } = Vue;
+
+    const app = createApp({
+      setup() {
+        const activeView = ref('overview');
+        const selectedDayIndex = ref(0);
+        const searchQuery = ref('');
+        const itineraryData = ref(UPDATED_ITINERARY_DATA);
+        const isDataLoadedFromAPI = ref(false);
+        const loadingWeather = ref(false);
+        const googleDocsEditUrl = GOOGLE_DOCS_EDIT_URL;
+
+        const tabRefs = ref([]);
+        const tabsContainer = ref(null);
+
+        const setTabRef = (el, index) => {
+          if (el) tabRefs.value[index] = el;
+        };
+
+        const weatherCache = ref({});
+
+        const totalDays = computed(() => itineraryData.value.days ? itineraryData.value.days.length : 0);
+        const currentDay = computed(() => itineraryData.value.days[selectedDayIndex.value] || itineraryData.value.days[0]);
+
+        const currentWeather = computed(() => {
+          const dayNum = currentDay.value.dayNum;
+          return weatherCache.value[dayNum] || {
+            tempMax: "--",
+            tempMin: "--",
+            label: "加載中",
+            icon: "sun",
+            windSpeed: "--",
+            precipitation: "0"
+          };
+        });
+
+        const filteredDays = computed(() => {
+          if (!searchQuery.value.trim()) {
+            return itineraryData.value.days.map((d, i) => ({ ...d, originalIndex: i }));
+          }
+          const q = searchQuery.value.toLowerCase();
+          return itineraryData.value.days
+            .map((d, i) => ({ ...d, originalIndex: i }))
+            .filter(d => {
+              const inTitle = d.title.toLowerCase().includes(q);
+              const inHighlights = d.highlights.toLowerCase().includes(q);
+              const inDetails = d.details.some(det => det.text.toLowerCase().includes(q) || (det.note && det.note.toLowerCase().includes(q)));
+              return inTitle || inHighlights || inDetails;
+            });
+        });
+
+        const fetchItineraryData = async () => {
+          if (!GOOGLE_SCRIPT_URL || GOOGLE_SCRIPT_URL === "YOUR_GAS_WEB_APP_URL") {
+            itineraryData.value = UPDATED_ITINERARY_DATA;
+            isDataLoadedFromAPI.value = false;
+            return;
+          }
+
+          try {
+            const res = await fetch(GOOGLE_SCRIPT_URL);
+            if (!res.ok) throw new Error("API 回應異常");
+            const data = await res.json();
+            if (data && data.days && data.days.length > 0) {
+              itineraryData.value = data;
+              isDataLoadedFromAPI.value = true;
+            } else {
+              throw new Error("格式不符合");
+            }
+          } catch (err) {
+            console.warn("抓取 GAS 失敗，自動切換為最新的預設行程資料:", err);
+            itineraryData.value = UPDATED_ITINERARY_DATA;
+            isDataLoadedFromAPI.value = false;
+          }
+        };
+
+        const fetchDayWeather = async (day) => {
+          if (!day || weatherCache.value[day.dayNum]) return;
+
+          loadingWeather.value = true;
+          try {
+            const url = `https://api.open-meteo.com/v1/forecast?latitude=${day.lat}&longitude=${day.lon}&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max,weathercode,windspeed_10m_max&timezone=auto`;
+            const res = await fetch(url);
+            const data = await res.json();
+
+            if (data && data.daily) {
+              const code = data.daily.weathercode[0] || 0;
+              const parsed = parseWeatherCode(code);
+
+              weatherCache.value[day.dayNum] = {
+                tempMax: Math.round(data.daily.temperature_2m_max[0]),
+                tempMin: Math.round(data.daily.temperature_2m_min[0]),
+                label: parsed.label,
+                icon: parsed.icon,
+                windSpeed: Math.round(data.daily.windspeed_10m_max[0] || 12),
+                precipitation: data.daily.precipitation_probability_max ? data.daily.precipitation_probability_max[0] : 5
+              };
+            }
+          } catch (e) {
+            weatherCache.value[day.dayNum] = {
+              tempMax: 18,
+              tempMin: 4,
+              label: "晴朗",
+              icon: "sun",
+              windSpeed: 14,
+              precipitation: 0
+            };
+          } finally {
+            loadingWeather.value = false;
+          }
+        };
+
+        const fetchDataAndWeather = async () => {
+          await fetchItineraryData();
+          weatherCache.value = {};
+          await fetchDayWeather(currentDay.value);
+        };
+
+        const switchToDay = (index) => {
+          selectedDayIndex.value = index;
+          activeView.value = 'daily';
+        };
+
+        const scrollTabIntoView = (index) => {
+          const el = tabRefs.value[index];
+          if (el && tabsContainer.value) {
+            el.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+          }
+        };
+
+        const formatDetailText = (text) => {
+          if (!text) return '';
+
+          let formatted = text.replace(/📍\s*\[(.*?)\]/g, (match, spot) => {
+            const gaodeUrl = `https://www.amap.com/search?query=${encodeURIComponent(spot)}`;
+            const xhsUrl = `https://www.xiaohongshu.com/search_result?keyword=${encodeURIComponent(spot)}`;
+            return `<span class="inline-flex items-center gap-1 font-semibold text-museum-dark bg-museum-sand/20 border border-museum-sand/40 px-2 py-0.5 rounded-md hover:bg-museum-terracotta hover:text-white hover:border-museum-terracotta transition-all my-0.5">
+                      📍 <a href="${gaodeUrl}" target="_blank" class="hover:underline" title="高德地圖導航">${spot}</a>
+                      <a href="${xhsUrl}" target="_blank" title="小紅書搜尋攻略" class="text-[10px] opacity-80 hover:opacity-100">🔍</a>
+                    </span>`;
+          });
+
+          formatted = formatted
+            .replace(/✈️/g, '<span class="px-1.5 py-0.5 rounded bg-sky-950/70 text-sky-200 text-xs font-semibold border border-sky-800/60">✈️ 航班</span>')
+            .replace(/🚗/g, '<span class="px-1.5 py-0.5 rounded bg-amber-950/70 text-amber-200 text-xs font-semibold border border-amber-800/60">🚗 車程</span>')
+            .replace(/🏨/g, '<span class="px-1.5 py-0.5 rounded bg-emerald-950/70 text-emerald-200 text-xs font-semibold border border-emerald-800/60">🏨 住宿</span>')
+            .replace(/🍚/g, '<span class="px-1.5 py-0.5 rounded bg-orange-950/70 text-orange-200 text-xs font-semibold border border-orange-800/60">🍚 美食</span>')
+            .replace(/📷/g, '<span class="px-1.5 py-0.5 rounded bg-purple-950/70 text-purple-200 text-xs font-semibold border border-purple-800/60">📷 拍照</span>')
+            .replace(/🌲/g, '<span class="px-1.5 py-0.5 rounded bg-emerald-950/70 text-emerald-200 text-xs font-semibold border border-emerald-800/60">🌲 景點</span>')
+            .replace(/🖤/g, '<span class="px-1.5 py-0.5 rounded bg-stone-900 text-stone-200 text-xs font-semibold border border-stone-700">🖤 奇觀</span>')
+            .replace(/💎/g, '<span class="px-1.5 py-0.5 rounded bg-teal-950/70 text-teal-200 text-xs font-semibold border border-teal-800/60">💎 鹽湖</span>')
+            .replace(/🍂/g, '<span class="px-1.5 py-0.5 rounded bg-amber-900/70 text-amber-200 text-xs font-semibold border border-amber-700">🍂 金秋</span>')
+            .replace(/🐪/g, '<span class="px-1.5 py-0.5 rounded bg-orange-900/70 text-orange-200 text-xs font-semibold border border-orange-700">🐪 沙漠</span>');
+
+          return formatted;
+        };
+
+        let touchStartX = 0;
+        let touchStartY = 0;
+
+        const handleTouchStart = (e) => {
+          touchStartX = e.touches[0].clientX;
+          touchStartY = e.touches[0].clientY;
+        };
+
+        const handleTouchEnd = (e) => {
+          const touchEndX = e.changedTouches[0].clientX;
+          const touchEndY = e.changedTouches[0].clientY;
+
+          const diffX = touchStartX - touchEndX;
+          const diffY = touchStartY - touchEndY;
+
+          if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > 40) {
+            if (diffX > 0 && selectedDayIndex.value < itineraryData.value.days.length - 1) {
+              selectedDayIndex.value++;
+            } else if (diffX < 0 && selectedDayIndex.value > 0) {
+              selectedDayIndex.value--;
+            }
+          }
+        };
+
+        watch(selectedDayIndex, (newIdx) => {
+          scrollTabIntoView(newIdx);
+          fetchDayWeather(itineraryData.value.days[newIdx]);
+        });
+
+        onMounted(async () => {
+          await fetchItineraryData();
+          await fetchDayWeather(currentDay.value);
+        });
+
+        return {
+          activeView,
+          selectedDayIndex,
+          searchQuery,
+          itineraryData,
+          totalDays,
+          currentDay,
+          currentWeather,
+          loadingWeather,
+          isDataLoadedFromAPI,
+          filteredDays,
+          googleDocsEditUrl,
+          tabRefs,
+          tabsContainer,
+          setTabRef,
+          fetchDataAndWeather,
+          switchToDay,
+          formatDetailText,
+          handleTouchStart,
+          handleTouchEnd
+        };
+      }
+    });
+
+    app.component('v-icon', VIcon);
+    app.mount('#app');
+  </script>
+
+</body>
+</html>
