@@ -171,74 +171,91 @@
       <div v-for="(item, idx) in currentDaySchedule" :key="idx" 
            class="bg-earth-100 rounded-xl p-4 border border-earth-300 shadow-sm transition-all hover:shadow-md">
         
-        <!-- 表頭時間與分類圖示 -->
+        <!-- 頂部欄：僅顯示 formatted 時間 -->
         <div class="flex items-center justify-between border-b border-earth-200 pb-2 mb-2">
-          <span class="text-xs font-bold text-earth-800"><i class="fa-regular fa-clock mr-1"></i>{{ item.time }}</span>
-          <span class="text-sm px-2 py-0.5 rounded bg-earth-200 text-earth-800 font-semibold">{{ item.category }}</span>
+          <span class="text-xs font-bold text-earth-800">
+            <i class="fa-regular fa-clock mr-1"></i>{{ formatTime(item.time) }}
+          </span>
         </div>
-
-        <!-- 分類 1: ✈️ 航班卡片 -->
+    
+        <!-- 分類 1: ✈️️ 航班卡片 -->
         <div v-if="item.category && item.category.includes('✈')" class="space-y-1">
           <div class="font-bold text-base text-earth-900 flex items-center justify-between">
-            <span>{{ item.location }}</span>
+            <span class="flex items-center">
+              <span class="mr-2">{{ item.category }}</span>
+              <span>{{ item.location }}</span>
+            </span>
             <a :href="'https://www.google.com/search?q=' + encodeURIComponent(item.description)" target="_blank" 
-               class="text-xs text-plateau-blue font-normal underline">
+               class="text-xs text-plateau-blue font-normal underline flex items-center">
                <i class="fa-solid fa-plane-departure mr-1"></i>抓取動態
             </a>
           </div>
-          <p class="text-xs text-earth-700">{{ item.description }}</p>
+          <p class="text-xs text-earth-700 pl-7">{{ item.description }}</p>
         </div>
-
+    
         <!-- 分類 2: 📍 景點卡片 -->
         <div v-else-if="item.category && item.category.includes('📍')" class="space-y-1">
           <div class="font-bold text-base text-earth-900 flex items-center justify-between">
-            <span>{{ item.location }}</span>
+            <span class="flex items-center">
+              <span class="mr-2">{{ item.category }}</span>
+              <span>{{ item.location }}</span>
+            </span>
             <a :href="'https://uri.amap.com/search?keyword=' + encodeURIComponent(item.location)" target="_blank" 
-               class="text-xs text-plateau-green font-normal underline">
+               class="text-xs text-plateau-green font-normal underline flex items-center">
                <i class="fa-solid fa-map-pin mr-1"></i>高德地圖
             </a>
           </div>
-          <p class="text-xs text-earth-700">{{ item.description }}</p>
+          <p class="text-xs text-earth-700 pl-7">{{ item.description }}</p>
         </div>
-
+    
         <!-- 分類 3: 🚗 行車資訊卡片 -->
         <div v-else-if="item.category && item.category.includes('🚗')" class="space-y-1 bg-earth-200/50 p-2.5 rounded-lg border border-earth-300/60">
-          <div class="font-bold text-sm text-earth-900 flex justify-between">
-            <span><i class="fa-solid fa-car mr-1 text-earth-700"></i>行車數據</span>
+          <div class="font-bold text-sm text-earth-900 flex justify-between items-center">
+            <span class="flex items-center">
+              <span class="mr-2">{{ item.category }}</span>
+              <span>行車數據：{{ item.location }}</span>
+            </span>
             <span class="text-xs text-plateau-red font-bold">{{ item.distance }} km</span>
           </div>
-          <div class="text-xs text-earth-800 flex justify-between">
+          <div class="text-xs text-earth-800 flex justify-between pl-7">
             <span>預估車程：{{ item.estimatedTime }}</span>
             <span>{{ item.description }}</span>
           </div>
         </div>
-
+    
         <!-- 分類 4: 🏨 住宿卡片 -->
         <div v-else-if="item.category && item.category.includes('🏨')" class="space-y-1">
           <div class="font-bold text-base text-earth-900 flex items-center justify-between">
-            <span>{{ item.location }}</span>
+            <span class="flex items-center">
+              <span class="mr-2">{{ item.category }}</span>
+              <span>{{ item.location }}</span>
+            </span>
             <a :href="'https://uri.amap.com/search?keyword=' + encodeURIComponent(item.location)" target="_blank" 
-               class="text-xs text-earth-800 font-normal underline">
+               class="text-xs text-earth-800 font-normal underline flex items-center">
                <i class="fa-solid fa-hotel mr-1"></i>導航至飯店
             </a>
           </div>
-          <p class="text-xs text-earth-700">{{ item.description }}</p>
+          <p class="text-xs text-earth-700 pl-7">{{ item.description }}</p>
         </div>
-
+    
         <!-- 分類 5: 🍚 美食卡片 -->
         <div v-else-if="item.category && item.category.includes('🍚')" class="space-y-1">
-          <div class="font-bold text-base text-earth-900">
+          <div class="font-bold text-base text-earth-900 flex items-center">
+            <span class="mr-2">{{ item.category }}</span>
             <span>{{ item.location }}</span>
           </div>
-          <p class="text-xs text-earth-700">{{ item.description }}</p>
+          <p class="text-xs text-earth-700 pl-7">{{ item.description }}</p>
         </div>
-
+    
         <!-- 通用預設卡片 -->
         <div v-else class="space-y-1">
-          <div class="font-bold text-base text-earth-900">{{ item.location }}</div>
-          <p class="text-xs text-earth-700">{{ item.description }}</p>
+          <div class="font-bold text-base text-earth-900 flex items-center">
+            <span class="mr-2" v-if="item.category">{{ item.category }}</span>
+            <span>{{ item.location }}</span>
+          </div>
+          <p class="text-xs text-earth-700 pl-7">{{ item.description }}</p>
         </div>
-
+    
       </div>
     </div>
 
@@ -255,7 +272,7 @@
 
   createApp({
     setup() {
-      const GAS_API_URL = "https://script.google.com/macros/s/AKfycbz7I4Shqp5_c45mkjG-SCJIBDGnQ3IUZ2uIF3Ou1dKRxsnIApPklo-zRKT5q4M1dbGO/exec";
+      const GAS_API_URL = "https://script.google.com/macros/s/AKfycbyroyZjzILbqN0jvePe6h0znGcJ0UFrQerr0RKSvdUpCTa8BhuLUul8-fbJGXi7Tv7F/exec";
       const currentView = ref('overview');
       const activeDayIndex = ref(0);
       const currentWeather = ref(null);
@@ -312,6 +329,19 @@
           isLoading.value = false;
         }
       }
+
+      const formatTime = (timeStr) => {
+      if (!timeStr) return '';
+      if (typeof timeStr === 'string' && timeStr.includes('T')) {
+        const date = new Date(timeStr);
+        if (!isNaN(date.getTime())) {
+          const hh = String(date.getHours()).padStart(2, '0');
+          const mm = String(date.getMinutes()).padStart(2, '0');
+          return `${hh}:${mm}`;
+        }
+      }
+      return timeStr;
+    };
 
       // 計算總公里數
       const totalDistance = computed(() => {
