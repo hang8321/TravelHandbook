@@ -13,6 +13,7 @@
   <!-- Google Fonts: Noto Serif TC for Museum Guide Style -->
   <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;600;700&family=Sans-serif&display=swap" rel="stylesheet">
 
+
   <script>
     tailwind.config = {
       theme: {
@@ -61,7 +62,7 @@
     <div class="absolute inset-0 opacity-20 bg-[radial-gradient(#ba9a68_1px,transparent_1px)] [background-size:16px_16px]"></div>
     <div class="relative z-10 text-center">
       <div class="inline-block px-3 py-1 bg-earth-700/60 rounded-full text-xs text-earth-200 tracking-widest mb-2 border border-earth-500/40">
-        MUSEUM STYLE TRAVEL GUIDE
+        Travel Hand Book
       </div>
       <h1 class="text-2xl md:text-4xl font-bold tracking-wider mb-2 text-earth-200">青海·甘肅大環線</h1>
       <p class="text-xs md:text-sm text-earth-300 font-light tracking-widest">2026.10.16 — 2026.10.26 (11 DAYS)</p>
@@ -70,17 +71,17 @@
 
   <!-- 頁面導航 Tab (行程總覽 / 每日行程) -->
   <nav class="flex border-b border-earth-300 bg-earth-100 sticky top-0 z-30 shadow-sm">
-    <button @click="currentView = 'overview'" 
-            :class="['flex-1 py-3 text-center font-bold text-sm transition-all', currentView === 'overview' ? 'text-earth-900 border-b-2 border-earth-800 bg-earth-50' : 'text-earth-500 hover:text-earth-700']">
-      <i class="fa-solid fa-compass mr-1">
-      行程總覽
-    </button>
-    <button @click="currentView = 'daily'" 
-            :class="['flex-1 py-3 text-center font-bold text-sm transition-all', currentView === 'daily' ? 'text-earth-900 border-b-2 border-earth-800 bg-earth-50' : 'text-earth-500 hover:text-earth-700']">
-      <i class="fa-solid fa-calendar-day mr-1">
-      每日行程詳情
-    </button>
-  </nav>
+  <button @click="currentView = 'overview'" 
+          :class="['flex-1 py-3 flex items-center justify-center font-bold text-sm transition-all', currentView === 'overview' ? 'text-earth-900 border-b-2 border-earth-800 bg-earth-50' : 'text-earth-500 hover:text-earth-700']">
+    <i class="fa-solid fa-compass mr-2"></i>
+    <span>行程總覽</span>
+  </button>
+  <button @click="currentView = 'daily'" 
+          :class="['flex-1 py-3 flex items-center justify-center font-bold text-sm transition-all', currentView === 'daily' ? 'text-earth-900 border-b-2 border-earth-800 bg-earth-50' : 'text-earth-500 hover:text-earth-700']">
+    <i class="fa-solid fa-calendar-day mr-2"></i>
+    <span>每日行程詳情</span>
+  </button>
+</nav>
 
   <!-- ==================== 頁面一：行程總覽 (Overview Dashboard) ==================== -->
   <main v-if="currentView === 'overview'" class="p-4 md:p-8 space-y-6">
@@ -289,18 +290,18 @@
       const rawScheduleData = ref({});
 
       // 載入 Google Sheets 資料
-      const fetchSheetData = async () => {
-        try {
-          isLoading.value = true;
-          const response = await fetch(GAS_API_URL);
-          const data = await response.json();
-          rawScheduleData.value = data;
-        } catch (error) {
-          console.error("無法讀取 Google Sheets 資料:", error);
-        } finally {
-          isLoading.value = false;
-        }
-      };
+      async function fetchSheetData() {
+      try {
+        const response = await fetch('YOUR_GAS_WEB_APP_URL', {
+          method: 'GET',
+          redirect: 'follow'
+        });
+        const data = await response.json();
+        // 賦值給你的 rawScheduleData
+      } catch (error) {
+        console.error("無法讀取 Google Sheets 資料:", error);
+      }
+    }
 
       // 計算總公里數
       const totalDistance = computed(() => {
