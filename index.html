@@ -353,21 +353,52 @@
       });
 
       // 動態匯總行程路線總覽
+      // ✅ 升級版：支援多種分類標記與彈性索取 Day 資料
       const timelineSummary = computed(() => {
         return daysList.value.map((dayItem, index) => {
-          const dayData = rawScheduleData.value[index] || [];
-          
+          // 兼顧 key 為數字 0/1/2... 或字串 "0"/"1"/"2"... 或 "Day 0"
+          const dayData = rawScheduleData.value[index] || 
+                          rawScheduleData.value[String(index)] || 
+                          rawScheduleData.value[`Day ${index}`] || 
+                          rawScheduleData.value[`Day${index}`] || [];
+      
+          // 1. 抓取景點 (分類包含 📍 或 景點)
           const spots = dayData
-            .filter(item => item.category && item.category.includes('📍'))
+            .filter(item => {
+              const cat = item.category ? String(item.category) : '';
+              return cat.includes('📍') || cat.includes('景點');
+            })
             .map(item => item.location)
             .filter(Boolean);
-            
-          const hotelItem = dayData.find(item => item.category && item.category.includes('🏨'));
-          
+      
+          // 2. 抓取住宿 (分類包含 🏨、酒店、住宿、飯店)
+          const hotelItem = dayData.find(item => {
+            const cat = item.category ? String(item.category) : '';
+            return cat.includes('🏨') || cat.includes('酒店') || cat.includes('住宿') || cat.includes('飯店');
+          });
+      
+          // 取得景點字串：如果有動態景點就用動態的，沒有就降級顯示預設
+          const destinationsText = spots.length > 0 ? spots.join('、') : (dayData.length > 0 ? '無特定景點' : dayItem.destinations);
+      
+          // 取得住宿字串：優先使用動態飯店名稱
+          let hotelText = dayItem.hotel;
+          if (hotelItem && hotelItem.location) {
+            hotelText = hotelItem.location;
+          } else if (dayData.length > 0) {
+            // 若表格有資料但未標註住宿，自動尋找描述中包含「入住/酒店/飯店/民宿」的項目
+            const matchHotelInDesc = dayData.find(item => {
+              const text = (item.location || '') + (item.description || '');
+              return text.includes('入住') || text.includes('酒店') || text.includes('飯店') || text.includes('民宿');
+            });
+            if (matchHotelInDesc) {
+              hotelText = matchHotelInDesc.location || hotelText;
+            }
+          }
+      
           return {
             ...dayItem,
-            destinations: spots.length > 0 ? spots.join('、') : dayItem.destinations,
-            hotel: hotelItem ? hotelItem.location : dayItem.hotel
+            destinations: destinationsText,
+            hotel: hotelText
           };
         });
       });
