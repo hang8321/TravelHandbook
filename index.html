@@ -170,7 +170,7 @@
     <div class="space-y-4">
       <template v-for="(item, idx) in currentDaySchedule" :key="idx">
         
-        <!-- ==================== 情況 1：無時間（只有內框及內容） ==================== -->
+        <!-- ==================== 情況 1：無時間（僅內框與內容） ==================== -->
         <div v-if="!item.time" 
              :class="[
                'p-3 rounded-xl border shadow-sm space-y-1 transition-all',
@@ -182,11 +182,11 @@
             <div class="font-bold text-sm text-earth-900 flex justify-between items-center">
               <span class="flex items-center">
                 <span class="mr-2">{{ item.category }}</span>
-                <span>{{ item.estimatedTime || item.location }}</span>
+                <span>{{ item.estimatedTime || getLocationTitle(item) }}</span>
               </span>
               <span class="text-xs text-plateau-red font-bold" v-if="item.distance">{{ item.distance }}</span>
             </div>
-            <div class="text-xs text-earth-800 flex justify-between pt-1" v-if="item.description">
+            <div class="text-xs text-earth-800 flex justify-between pt-1" v-if="item.description && item.location">
               <span>{{ item.description }}</span>
             </div>
           </div>
@@ -196,14 +196,14 @@
             <div class="font-bold text-base text-earth-900 flex items-center justify-between">
               <span class="flex items-center">
                 <span class="mr-2">{{ item.category }}</span>
-                <span>{{ item.location }}</span>
+                <span>{{ getLocationTitle(item) }}</span>
               </span>
-              <a :href="'https://uri.amap.com/search?keyword=' + encodeURIComponent(item.location)" target="_blank" 
-                 class="text-xs text-plateau-green font-normal underline flex items-center" v-if="item.location">
+              <a :href="'https://uri.amap.com/search?keyword=' + encodeURIComponent(getLocationTitle(item))" target="_blank" 
+                 class="text-xs text-plateau-green font-normal underline flex items-center" v-if="getLocationTitle(item)">
                  <i class="fa-solid fa-map-pin mr-1"></i>高德地圖
               </a>
             </div>
-            <p class="text-xs text-earth-700 pl-7" v-if="item.description">{{ item.description }}</p>
+            <p class="text-xs text-earth-700 pl-7" v-if="item.location && item.description">{{ item.description }}</p>
           </div>
     
           <!-- 🏨 住宿（無時間） -->
@@ -211,28 +211,28 @@
             <div class="font-bold text-base text-earth-900 flex items-center justify-between">
               <span class="flex items-center">
                 <span class="mr-2">{{ item.category }}</span>
-                <span>{{ item.location }}</span>
+                <span>{{ getLocationTitle(item) }}</span>
               </span>
-              <a :href="'https://uri.amap.com/search?keyword=' + encodeURIComponent(item.location)" target="_blank" 
-                 class="text-xs text-earth-800 font-normal underline flex items-center" v-if="item.location">
+              <a :href="'https://uri.amap.com/search?keyword=' + encodeURIComponent(getLocationTitle(item))" target="_blank" 
+                 class="text-xs text-earth-800 font-normal underline flex items-center" v-if="getLocationTitle(item)">
                  <i class="fa-solid fa-hotel mr-1"></i>導航至飯店
               </a>
             </div>
-            <p class="text-xs text-earth-700 pl-7" v-if="item.description">{{ item.description }}</p>
+            <p class="text-xs text-earth-700 pl-7" v-if="item.location && item.description">{{ item.description }}</p>
           </div>
     
-          <!-- 🍚 美食 / 通用（無時間） -->
+          <!-- 🍚 美食 / 通用卡片（無時間） -->
           <div v-else>
             <div class="font-bold text-base text-earth-900 flex items-center">
               <span class="mr-2" v-if="item.category">{{ item.category }}</span>
-              <span>{{ item.location }}</span>
+              <span>{{ getLocationTitle(item) }}</span>
             </div>
-            <p class="text-xs text-earth-700 pl-7" v-if="item.description">{{ item.description }}</p>
+            <p class="text-xs text-earth-700 pl-7" v-if="item.location && item.description">{{ item.description }}</p>
           </div>
     
         </div>
     
-        <!-- ==================== 情況 2：有時間（有大外框 + 時間頂頭） ==================== -->
+        <!-- ==================== 情況 2：有時間（大外框 + 時間頭部） ==================== -->
         <div v-else class="bg-earth-100 rounded-xl p-4 border border-earth-300 shadow-sm transition-all hover:shadow-md">
           
           <!-- 頂部時間標籤 -->
@@ -247,14 +247,14 @@
             <div class="font-bold text-base text-earth-900 flex items-center justify-between">
               <span class="flex items-center">
                 <span class="mr-2">{{ item.category }}</span>
-                <span>{{ item.location }}</span>
+                <span>{{ getLocationTitle(item) }}</span>
               </span>
-              <a :href="'https://www.google.com/search?q=' + encodeURIComponent(item.description)" target="_blank" 
+              <a :href="'https://www.google.com/search?q=' + encodeURIComponent(item.description || item.location)" target="_blank" 
                  class="text-xs text-plateau-blue font-normal underline flex items-center">
                  <i class="fa-solid fa-plane-departure mr-1"></i>抓取動態
               </a>
             </div>
-            <p class="text-xs text-earth-700 pl-7" v-if="item.description">{{ item.description }}</p>
+            <p class="text-xs text-earth-700 pl-7" v-if="item.location && item.description">{{ item.description }}</p>
           </div>
     
           <!-- 📍 景點卡片（有時間） -->
@@ -262,23 +262,23 @@
             <div class="font-bold text-base text-earth-900 flex items-center justify-between">
               <span class="flex items-center">
                 <span class="mr-2">{{ item.category }}</span>
-                <span>{{ item.location }}</span>
+                <span>{{ getLocationTitle(item) }}</span>
               </span>
-              <a :href="'https://uri.amap.com/search?keyword=' + encodeURIComponent(item.location)" target="_blank" 
+              <a :href="'https://uri.amap.com/search?keyword=' + encodeURIComponent(getLocationTitle(item))" target="_blank" 
                  class="text-xs text-plateau-green font-normal underline flex items-center">
                  <i class="fa-solid fa-map-pin mr-1"></i>高德地圖
               </a>
             </div>
-            <p class="text-xs text-earth-700 pl-7" v-if="item.description">{{ item.description }}</p>
+            <p class="text-xs text-earth-700 pl-7" v-if="item.location && item.description">{{ item.description }}</p>
           </div>
     
           <!-- 通用預設卡片（有時間） -->
           <div v-else class="space-y-1">
             <div class="font-bold text-base text-earth-900 flex items-center">
               <span class="mr-2" v-if="item.category">{{ item.category }}</span>
-              <span>{{ item.location }}</span>
+              <span>{{ getLocationTitle(item) }}</span>
             </div>
-            <p class="text-xs text-earth-700 pl-7" v-if="item.description">{{ item.description }}</p>
+            <p class="text-xs text-earth-700 pl-7" v-if="item.location && item.description">{{ item.description }}</p>
           </div>
     
         </div>
@@ -313,17 +313,17 @@
       ];
 
       const daysList = ref([
-        { day: 0, date: '10/16', locationName: '西寧', lat: 36.62, lon: 101.77, title: '抵達西寧', destinations: '集合、入住飯店', hotel: '西寧市區飯店' },
-        { day: 1, date: '10/17', locationName: '共和/青海湖', lat: 36.58, lon: 100.62, title: '西寧 -> 青海湖', destinations: '青海湖日月山、日月亭', hotel: '共和縣飯店' },
+        { day: 0, date: '10/16', locationName: '西寧', lat: 36.62, lon: 101.77, title: '澳門 -> 上海', destinations: '轉機', hotel: '西寧市區飯店' },
+        { day: 1, date: '10/17', locationName: '共和/青海湖', lat: 36.58, lon: 100.62, title: '上海 -> 西寧 -> 青海湖', destinations: '青海湖日月山、日月亭', hotel: '共和縣飯店' },
         { day: 2, date: '10/18', locationName: '德令哈', lat: 37.37, lon: 97.36, title: '青海湖 -> 德令哈', destinations: '茶卡鹽湖、柏樹山', hotel: '德令哈市區飯店' },
         { day: 3, date: '10/19', locationName: '大柴旦', lat: 37.85, lon: 95.36, title: '德令哈 -> 大柴旦', destinations: '察爾汗鹽湖、翡翠湖', hotel: '大柴旦飯店' },
         { day: 4, date: '10/20', locationName: '水上雅丹', lat: 37.52, lon: 93.91, title: '大柴旦 -> 水上雅丹', destinations: '烏素特水上雅丹、雙色湖', hotel: '雅丹營地/酒店' },
-        { day: 5, date: '10/21', locationName: '敦煌', lat: 40.14, lon: 94.66, title: '水上雅丹 -> 敦煌', destinations: '黑獨山、石油小鎮', hotel: '敦煌市區飯店' },
-        { day: 6, date: '10/22', locationName: '敦煌', lat: 40.14, lon: 94.66, title: '敦煌深度遊', destinations: '莫高窟、鳴沙山月牙泉', hotel: '敦煌市區飯店' },
-        { day: 7, date: '10/23', locationName: '嘉峪關', lat: 39.77, lon: 98.28, title: '敦煌 -> 嘉峪關', destinations: '天下第一雄關、長城第一墩', hotel: '嘉峪關飯店' },
-        { day: 8, date: '10/24', locationName: '張掖', lat: 38.93, lon: 100.45, title: '嘉峪關 -> 張掖', destinations: '七彩丹霞景區', hotel: '張掖市區飯店' },
+        { day: 5, date: '10/21', locationName: '冷湖鎮', lat: 38.73, lon: 93.33, title: '水上雅丹 -> 黑湖山 -> 冷湖鎮', destinations: '黑獨山、石油小鎮', hotel: '冷湖鎮飯店' },
+        { day: 6, date: '10/22', locationName: '敦煌', lat: 40.14, lon: 94.66, title: '敦煌', destinations: '莫高窟、鳴沙山月牙泉', hotel: '敦煌市區飯店' },
+        { day: 7, date: '10/23', locationName: '酒泉', lat: 39.73, lon: 98.49, title: '敦煌 -> 酒泉', destinations: '天下第一雄關、長城第一墩', hotel: '酒泉飯店' },
+        { day: 8, date: '10/24', locationName: '張掖', lat: 38.93, lon: 100.45, title: '酒泉 -> 張掖', destinations: '七彩丹霞景區', hotel: '張掖飯店' },
         { day: 9, date: '10/25', locationName: '祁連', lat: 38.17, lon: 100.24, title: '張掖 -> 祁連', destinations: '卓爾山、祁連大草原', hotel: '祁連縣飯店' },
-        { day: 10, date: '10/26', locationName: '西寧', lat: 36.62, lon: 101.77, title: '祁連 -> 西寧 -> 返程', destinations: '門源花海路段、返程機場', hotel: '溫馨的家' }
+        { day: 10, date: '10/26', locationName: '西寧', lat: 36.62, lon: 101.77, title: '祁連 -> 西寧 -> 上海 -> 澳門', destinations: '返程機場', hotel: '溫馨的家' }
       ]);
 
       const rawScheduleData = ref({});
@@ -364,6 +364,15 @@
           }
         }
         return str;
+      };
+
+      // 取得地點標題：當 location 為空時，自動改用 description 替代
+      const getLocationTitle = (item) => {
+        if (!item) return '';
+        if (item.location && String(item.location).trim() !== '') {
+          return String(item.location).trim();
+        }
+        return item.description ? String(item.description).trim() : '';
       };
 
       // 計算總公里數
@@ -512,6 +521,7 @@
         currentDaySchedule,
         currentWeather,
         formatTime,
+        getLocationTitle,
         selectDay,
         handleTouchStart,
         handleTouchEnd
