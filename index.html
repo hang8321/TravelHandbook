@@ -326,7 +326,27 @@
         return Math.round(sum);
       });
 
-      const timelineSummary = computed(() => daysList.value);
+      // ✅ 動態從 rawScheduleData (Google Sheets) 擷取每日景點與飯店
+      const timelineSummary = computed(() => {
+        return daysList.value.map((dayItem, index) => {
+          const dayData = rawScheduleData.value[index] || [];
+          
+          // 1. 抓取該 Day 分類為 📍 (景點) 的地點名稱
+          const spots = dayData
+            .filter(item => item.category && item.category.includes('📍'))
+            .map(item => item.location)
+            .filter(Boolean);
+            
+          // 2. 抓取該 Day 分類為 🏨 (住宿) 的飯店名稱
+          const hotelItem = dayData.find(item => item.category && item.category.includes('🏨'));
+          
+          return {
+            ...dayItem,
+            destinations: spots.length > 0 ? spots.join('、') : dayItem.destinations,
+            hotel: hotelItem ? hotelItem.location : dayItem.hotel
+          };
+        });
+      });
       const currentDaySchedule = computed(() => rawScheduleData.value[activeDayIndex.value] || []);
 
       // 調用 Open-Meteo API 獲取動態天氣數據
