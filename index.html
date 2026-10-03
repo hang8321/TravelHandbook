@@ -213,12 +213,11 @@
           <div class="font-bold text-sm text-earth-900 flex justify-between items-center">
             <span class="flex items-center">
               <span class="mr-2">{{ item.category }}</span>
-              <span>行車數據{{ item.location ? '：' + item.location : '' }}</span>
+              <span>{{ item.estimatedTime }}</span>
             </span>
             <span class="text-xs text-plateau-red font-bold" v-if="item.distance">{{ item.distance }}</span>
           </div>
           <div class="text-xs text-earth-800 flex justify-between pt-1">
-            <span v-if="item.estimatedTime">預估車程：{{ item.estimatedTime }}</span>
             <span v-if="item.description">{{ item.description }}</span>
           </div>
         </div>
