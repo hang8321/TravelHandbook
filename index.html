@@ -168,96 +168,124 @@
 
     <!-- 時間與地點動態行程清單 -->
     <div class="space-y-4">
-      <div v-for="(item, idx) in currentDaySchedule" :key="idx" 
-           class="bg-earth-100 rounded-xl p-4 border border-earth-300 shadow-sm transition-all hover:shadow-md">
+      <template v-for="(item, idx) in currentDaySchedule" :key="idx">
         
-        <!-- 頂部時間標籤 -->
-        <div class="flex items-center justify-between border-b border-earth-200 pb-2 mb-2">
-          <span class="text-xs font-bold text-earth-800">
-            <i class="fa-regular fa-clock mr-1"></i>{{ formatTime(item.time) }}
-          </span>
-        </div>
-
-        <!-- 分類 1: ✈️️ 航班卡片 -->
-        <div v-if="item.category && item.category.includes('✈')" class="space-y-1">
-          <div class="font-bold text-base text-earth-900 flex items-center justify-between">
-            <span class="flex items-center">
-              <span class="mr-2">{{ item.category }}</span>
+        <!-- ==================== 情況 1：無時間（只有內框及內容） ==================== -->
+        <div v-if="!item.time" 
+             :class="[
+               'p-3 rounded-xl border shadow-sm space-y-1 transition-all',
+               item.category && item.category.includes('🚗') ? 'bg-earth-200/60 border-earth-300/80' : 'bg-earth-100 border-earth-300'
+             ]">
+          
+          <!-- 🚗 行車資訊 -->
+          <div v-if="item.category && item.category.includes('🚗')">
+            <div class="font-bold text-sm text-earth-900 flex justify-between items-center">
+              <span class="flex items-center">
+                <span class="mr-2">{{ item.category }}</span>
+                <span>{{ item.estimatedTime || item.location }}</span>
+              </span>
+              <span class="text-xs text-plateau-red font-bold" v-if="item.distance">{{ item.distance }}</span>
+            </div>
+            <div class="text-xs text-earth-800 flex justify-between pt-1" v-if="item.description">
+              <span>{{ item.description }}</span>
+            </div>
+          </div>
+    
+          <!-- 📍 景點（無時間） -->
+          <div v-else-if="item.category && item.category.includes('📍')">
+            <div class="font-bold text-base text-earth-900 flex items-center justify-between">
+              <span class="flex items-center">
+                <span class="mr-2">{{ item.category }}</span>
+                <span>{{ item.location }}</span>
+              </span>
+              <a :href="'https://uri.amap.com/search?keyword=' + encodeURIComponent(item.location)" target="_blank" 
+                 class="text-xs text-plateau-green font-normal underline flex items-center" v-if="item.location">
+                 <i class="fa-solid fa-map-pin mr-1"></i>高德地圖
+              </a>
+            </div>
+            <p class="text-xs text-earth-700 pl-7" v-if="item.description">{{ item.description }}</p>
+          </div>
+    
+          <!-- 🏨 住宿（無時間） -->
+          <div v-else-if="item.category && item.category.includes('🏨')">
+            <div class="font-bold text-base text-earth-900 flex items-center justify-between">
+              <span class="flex items-center">
+                <span class="mr-2">{{ item.category }}</span>
+                <span>{{ item.location }}</span>
+              </span>
+              <a :href="'https://uri.amap.com/search?keyword=' + encodeURIComponent(item.location)" target="_blank" 
+                 class="text-xs text-earth-800 font-normal underline flex items-center" v-if="item.location">
+                 <i class="fa-solid fa-hotel mr-1"></i>導航至飯店
+              </a>
+            </div>
+            <p class="text-xs text-earth-700 pl-7" v-if="item.description">{{ item.description }}</p>
+          </div>
+    
+          <!-- 🍚 美食 / 通用（無時間） -->
+          <div v-else>
+            <div class="font-bold text-base text-earth-900 flex items-center">
+              <span class="mr-2" v-if="item.category">{{ item.category }}</span>
               <span>{{ item.location }}</span>
-            </span>
-            <a :href="'https://www.google.com/search?q=' + encodeURIComponent(item.description)" target="_blank" 
-               class="text-xs text-plateau-blue font-normal underline flex items-center">
-               <i class="fa-solid fa-plane-departure mr-1"></i>抓取動態
-            </a>
+            </div>
+            <p class="text-xs text-earth-700 pl-7" v-if="item.description">{{ item.description }}</p>
           </div>
-          <p class="text-xs text-earth-700 pl-7">{{ item.description }}</p>
+    
         </div>
-
-        <!-- 分類 2: 📍 景點卡片 -->
-        <div v-else-if="item.category && item.category.includes('📍')" class="space-y-1">
-          <div class="font-bold text-base text-earth-900 flex items-center justify-between">
-            <span class="flex items-center">
-              <span class="mr-2">{{ item.category }}</span>
+    
+        <!-- ==================== 情況 2：有時間（有大外框 + 時間頂頭） ==================== -->
+        <div v-else class="bg-earth-100 rounded-xl p-4 border border-earth-300 shadow-sm transition-all hover:shadow-md">
+          
+          <!-- 頂部時間標籤 -->
+          <div class="flex items-center justify-between border-b border-earth-200 pb-2 mb-2">
+            <span class="text-xs font-bold text-earth-800">
+              <i class="fa-regular fa-clock mr-1"></i>{{ formatTime(item.time) }}
+            </span>
+          </div>
+    
+          <!-- ✈ 航班卡片 -->
+          <div v-if="item.category && item.category.includes('✈')" class="space-y-1">
+            <div class="font-bold text-base text-earth-900 flex items-center justify-between">
+              <span class="flex items-center">
+                <span class="mr-2">{{ item.category }}</span>
+                <span>{{ item.location }}</span>
+              </span>
+              <a :href="'https://www.google.com/search?q=' + encodeURIComponent(item.description)" target="_blank" 
+                 class="text-xs text-plateau-blue font-normal underline flex items-center">
+                 <i class="fa-solid fa-plane-departure mr-1"></i>抓取動態
+              </a>
+            </div>
+            <p class="text-xs text-earth-700 pl-7" v-if="item.description">{{ item.description }}</p>
+          </div>
+    
+          <!-- 📍 景點卡片（有時間） -->
+          <div v-else-if="item.category && item.category.includes('📍')" class="space-y-1">
+            <div class="font-bold text-base text-earth-900 flex items-center justify-between">
+              <span class="flex items-center">
+                <span class="mr-2">{{ item.category }}</span>
+                <span>{{ item.location }}</span>
+              </span>
+              <a :href="'https://uri.amap.com/search?keyword=' + encodeURIComponent(item.location)" target="_blank" 
+                 class="text-xs text-plateau-green font-normal underline flex items-center">
+                 <i class="fa-solid fa-map-pin mr-1"></i>高德地圖
+              </a>
+            </div>
+            <p class="text-xs text-earth-700 pl-7" v-if="item.description">{{ item.description }}</p>
+          </div>
+    
+          <!-- 通用預設卡片（有時間） -->
+          <div v-else class="space-y-1">
+            <div class="font-bold text-base text-earth-900 flex items-center">
+              <span class="mr-2" v-if="item.category">{{ item.category }}</span>
               <span>{{ item.location }}</span>
-            </span>
-            <a :href="'https://uri.amap.com/search?keyword=' + encodeURIComponent(item.location)" target="_blank" 
-               class="text-xs text-plateau-green font-normal underline flex items-center">
-               <i class="fa-solid fa-map-pin mr-1"></i>高德地圖
-            </a>
+            </div>
+            <p class="text-xs text-earth-700 pl-7" v-if="item.description">{{ item.description }}</p>
           </div>
-          <p class="text-xs text-earth-700 pl-7">{{ item.description }}</p>
+    
         </div>
-
-        <!-- 分類 3: 🚗 行車資訊卡片 -->
-        <div v-else-if="item.category && item.category.includes('🚗')" class="space-y-1 bg-earth-200/50 p-2.5 rounded-lg border border-earth-300/60">
-          <div class="font-bold text-sm text-earth-900 flex justify-between items-center">
-            <span class="flex items-center">
-              <span class="mr-2">{{ item.category }}</span>
-              <span>{{ item.estimatedTime }}</span>
-            </span>
-            <span class="text-xs text-plateau-red font-bold" v-if="item.distance">{{ item.distance }}</span>
-          </div>
-          <div class="text-xs text-earth-800 flex justify-between pt-1">
-            <span v-if="item.description">{{ item.description }}</span>
-          </div>
-        </div>
-
-        <!-- 分類 4: 🏨 住宿卡片 -->
-        <div v-else-if="item.category && item.category.includes('🏨')" class="space-y-1">
-          <div class="font-bold text-base text-earth-900 flex items-center justify-between">
-            <span class="flex items-center">
-              <span class="mr-2">{{ item.category }}</span>
-              <span>{{ item.location }}</span>
-            </span>
-            <a :href="'https://uri.amap.com/search?keyword=' + encodeURIComponent(item.location)" target="_blank" 
-               class="text-xs text-earth-800 font-normal underline flex items-center">
-               <i class="fa-solid fa-hotel mr-1"></i>導航至飯店
-            </a>
-          </div>
-          <p class="text-xs text-earth-700 pl-7">{{ item.description }}</p>
-        </div>
-
-        <!-- 分類 5: 🍚 美食卡片 -->
-        <div v-else-if="item.category && item.category.includes('🍚')" class="space-y-1">
-          <div class="font-bold text-base text-earth-900 flex items-center">
-            <span class="mr-2">{{ item.category }}</span>
-            <span>{{ item.location }}</span>
-          </div>
-          <p class="text-xs text-earth-700 pl-7">{{ item.description }}</p>
-        </div>
-
-        <!-- 通用預設卡片 -->
-        <div v-else class="space-y-1">
-          <div class="font-bold text-base text-earth-900 flex items-center">
-            <span class="mr-2" v-if="item.category">{{ item.category }}</span>
-            <span>{{ item.location }}</span>
-          </div>
-          <p class="text-xs text-earth-700 pl-7">{{ item.description }}</p>
-        </div>
-
-      </div>
+    
+      </template>
     </div>
-
+    
     <!-- 手勢滑動提示 -->
     <div class="text-center text-xs text-earth-500 mt-6">
       <i class="fa-solid fa-hand-pointer mr-1"></i>左右滑動螢幕即可切換日期
