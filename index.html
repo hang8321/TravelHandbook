@@ -255,7 +255,7 @@
 
   createApp({
     setup() {
-      const GAS_API_URL = "https://script.google.com/macros/s/AKfycbzqE1YVAdlXNOwY4DwQ7XLvi-Z2TylFk8ebQ7-wEGnCKL1EFs7rvkxCn_kb5MYQHD9v/exec";
+      const GAS_API_URL = "https://script.google.com/macros/s/AKfycbz7I4Shqp5_c45mkjG-SCJIBDGnQ3IUZ2uIF3Ou1dKRxsnIApPklo-zRKT5q4M1dbGO/exec";
       const currentView = ref('overview');
       const activeDayIndex = ref(0);
       const currentWeather = ref(null);
@@ -292,12 +292,20 @@
       async function fetchSheetData() {
         try {
           isLoading.value = true;
+          // 使用 CORS 模式發起請求
           const response = await fetch(GAS_API_URL, {
             method: 'GET',
+            mode: 'cors',
             redirect: 'follow'
           });
+      
+          if (!response.ok) {
+            throw new Error(`HTTP 錯誤！狀態碼：${response.status}`);
+          }
+      
           const data = await response.json();
-          rawScheduleData.value = data; // 寫入資料
+          rawScheduleData.value = data;
+          console.log("成功讀取 Google Sheets 資料:", data);
         } catch (error) {
           console.error("無法讀取 Google Sheets 資料:", error);
         } finally {
