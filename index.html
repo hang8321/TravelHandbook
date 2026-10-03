@@ -226,7 +226,7 @@
               </span>
               <a :href="'https://uri.amap.com/search?keyword=' + encodeURIComponent(getLocationTitle(item))" target="_blank" 
                  class="text-xs text-plateau-green font-normal underline flex items-center" v-if="getLocationTitle(item)">
-                 <i class="fa-solid fa-map-pin mr-1"></i>高德地圖
+                 <i class="fa-solid fa-map-pin mr-1"></i>導航至此
               </a>
             </div>
             <p class="text-xs text-earth-700 pl-7" v-if="item.location && item.description">{{ item.description }}</p>
@@ -277,7 +277,7 @@
               </span>
               <a :href="'https://www.google.com/search?q=' + encodeURIComponent(item.description || item.location)" target="_blank" 
                  class="text-xs text-plateau-blue font-normal underline flex items-center">
-                 <i class="fa-solid fa-plane-departure mr-1"></i>抓取動態
+                 <i class="fa-solid fa-plane-departure mr-1"></i>航班資訊
               </a>
             </div>
             <p class="text-xs text-earth-700 pl-7" v-if="item.location && item.description">{{ item.description }}</p>
@@ -292,7 +292,7 @@
               </span>
               <a :href="'https://uri.amap.com/search?keyword=' + encodeURIComponent(getLocationTitle(item))" target="_blank" 
                  class="text-xs text-plateau-green font-normal underline flex items-center">
-                 <i class="fa-solid fa-map-pin mr-1"></i>高德地圖
+                 <i class="fa-solid fa-map-pin mr-1"></i>導航至此
               </a>
             </div>
             <p class="text-xs text-earth-700 pl-7" v-if="item.location && item.description">{{ item.description }}</p>
@@ -312,10 +312,6 @@
       </template>
     </div>
     
-    <!-- 手勢滑動提示 -->
-    <div class="text-center text-xs text-earth-500 mt-6">
-      <i class="fa-solid fa-hand-pointer mr-1"></i>左右滑動螢幕即可切換日期
-    </div>
   </main>
 
 </div>
@@ -339,17 +335,17 @@
       ];
 
       const daysList = ref([
-        { day: 0, date: '10/16', locationName: '澳門/上海', lat: 31.23, lon: 121.47, altitude: 4, title: '澳門 -> 上海', destinations: '', hotel: '' },
+        { day: 0, date: '10/16', locationName: '上海', lat: 31.23, lon: 121.47, altitude: 4, title: '澳門 -> 上海', destinations: '', hotel: '' },
         { day: 1, date: '10/17', locationName: '青海湖', lat: 36.58, lon: 100.62, altitude: 3200, title: '上海 -> 西寧 -> 青海湖', destinations: '', hotel: '' },
         { day: 2, date: '10/18', locationName: '德令哈', lat: 37.37, lon: 97.36, altitude: 2980, title: '青海湖 -> 德令哈', destinations: '', hotel: '' },
         { day: 3, date: '10/19', locationName: '大柴旦', lat: 37.85, lon: 95.36, altitude: 3170, title: '德令哈 -> 大柴旦', destinations: '', hotel: '' },
         { day: 4, date: '10/20', locationName: '水上雅丹', lat: 37.52, lon: 93.91, altitude: 2680, title: '大柴旦 -> 水上雅丹', destinations: '', hotel: '' },
         { day: 5, date: '10/21', locationName: '冷湖鎮', lat: 38.74, lon: 93.33, altitude: 2730, title: '水上雅丹 -> 黑獨山 -> 冷湖鎮', destinations: '', hotel: '' },
-        { day: 6, date: '10/22', locationName: '敦煌', lat: 40.14, lon: 94.66, altitude: 1140, title: '敦煌深度遊', destinations: '', hotel: '' },
+        { day: 6, date: '10/22', locationName: '敦煌', lat: 40.14, lon: 94.66, altitude: 1140, title: '冷湖鎮 -> 敦煌', destinations: '', hotel: '' },
         { day: 7, date: '10/23', locationName: '酒泉', lat: 39.73, lon: 98.49, altitude: 1470, title: '敦煌 -> 酒泉', destinations: '', hotel: '' },
         { day: 8, date: '10/24', locationName: '張掖', lat: 38.93, lon: 100.45, altitude: 1480, title: '酒泉 -> 張掖', destinations: '', hotel: '' },
         { day: 9, date: '10/25', locationName: '祁連', lat: 38.17, lon: 100.24, altitude: 2780, title: '張掖 -> 祁連', destinations: '', hotel: '' },
-        { day: 10, date: '10/26', locationName: '西寧', lat: 36.62, lon: 101.77, altitude: 2260, title: '祁連 -> 西寧 -> 返程', destinations: '', hotel: '' }
+        { day: 10, date: '10/26', locationName: '西寧', lat: 36.62, lon: 101.77, altitude: 2260, title: '祁連 -> 西寧 -> 上海 -> 澳門', destinations: '', hotel: '' }
       ]);
 
       const rawScheduleData = ref({});
@@ -416,6 +412,7 @@
 
       // 動態匯總行程路線總覽
       // ✅ 動態匯總：精準抓取「入住」或當天「最後一個」飯店地點, 當該類別無資料時設為空字串 ''
+      // ✅ 住宿抓取邏輯：排除描述含「退宿」的項目
       const timelineSummary = computed(() => {
         return daysList.value.map((dayItem, index) => {
           const dayData = rawScheduleData.value[index] || 
@@ -432,24 +429,28 @@
             .map(item => item.location || item.description)
             .filter(Boolean);
       
-          // 2. 抓取住宿：優先尋找描述包含「入住」的項目
+          // 2. 抓取住宿：
+          // 第一步：先找出描述 (description) 含有「入住」的項目
           let hotelItem = dayData.find(item => {
             const desc = item.description ? String(item.description) : '';
             return desc.includes('入住');
           });
       
-          // 若未寫「入住」，反向尋找當天最後一個 🏨 / 酒店 項目
+          // 第二步：若沒有「入住」，尋找分類為 🏨 且描述「不含退宿」的項目 (取最後一個)
           if (!hotelItem) {
-            const hotelList = dayData.filter(item => {
+            const validHotels = dayData.filter(item => {
               const cat = item.category ? String(item.category) : '';
-              return cat.includes('🏨') || cat.includes('酒店') || cat.includes('住宿') || cat.includes('飯店');
+              const desc = item.description ? String(item.description) : '';
+              const isHotelCat = cat.includes('🏨') || cat.includes('酒店') || cat.includes('住宿') || cat.includes('飯店');
+              return isHotelCat && !desc.includes('退宿'); // 關鍵：排除退宿！
             });
-            if (hotelList.length > 0) {
-              hotelItem = hotelList[hotelList.length - 1];
+      
+            if (validHotels.length > 0) {
+              hotelItem = validHotels[validHotels.length - 1];
             }
           }
       
-          // 當沒資料時直接賦值空字串 ''，不顯示任何預設資訊
+          // 當景點或住宿無符合資料時設為 ''，配合前端 v-if 自動隱藏
           return {
             ...dayItem,
             destinations: spots.length > 0 ? spots.join('、') : '',
