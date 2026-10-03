@@ -125,12 +125,23 @@
         <div v-for="(day, index) in timelineSummary" :key="index" class="relative group cursor-pointer" @click="selectDay(index)">
           <div class="absolute -left-[31px] top-1 w-4 h-4 rounded-full bg-earth-500 border-2 border-earth-50"></div>
           <div class="bg-earth-100 p-3 rounded-lg border border-earth-200 shadow-sm hover:border-earth-500 transition-all">
+            
+            <!-- 表頭：DAY 與標題 -->
             <div class="flex justify-between items-center mb-1">
               <span class="font-bold text-sm text-earth-900">DAY {{ day.day }} · {{ day.date }}</span>
               <span class="text-xs text-earth-700 font-semibold">{{ day.title }}</span>
             </div>
-            <p class="text-xs text-earth-800 mb-1"><i class="fa-solid fa-location-dot text-earth-700 mr-1"></i>主要景點：{{ day.destinations }}</p>
-            <p class="text-xs text-earth-700"><i class="fa-solid fa-bed text-earth-700 mr-1"></i>住宿：{{ day.hotel }}</p>
+            
+            <!-- 主要景點：僅在有資料時顯示 -->
+            <p class="text-xs text-earth-800 mb-1" v-if="day.destinations">
+              <i class="fa-solid fa-location-dot text-earth-700 mr-1"></i>主要景點：{{ day.destinations }}
+            </p>
+            
+            <!-- 住宿：僅在有資料時顯示 -->
+            <p class="text-xs text-earth-700" v-if="day.hotel">
+              <i class="fa-solid fa-bed text-earth-700 mr-1"></i>住宿：{{ day.hotel }}
+            </p>
+    
           </div>
         </div>
       </div>
@@ -150,17 +161,32 @@
       </button>
     </div>
 
-    <!-- 該 Day 天氣卡片 -->
+    <!-- 該 Day 天氣與海拔卡片 -->
     <section v-if="currentWeather" class="bg-gradient-to-r from-earth-200 to-earth-100 p-4 rounded-2xl border border-earth-300 mb-5 shadow-sm flex items-center justify-between">
       <div>
-        <div class="text-xs text-earth-700 font-bold mb-1">
-          <i class="fa-solid fa-cloud-sun mr-1"></i>{{ daysList[activeDayIndex].locationName }} 天氣預報
+        <!-- 位置名稱與海拔標籤 -->
+        <div class="flex items-center space-x-2 mb-1">
+          <span class="text-xs text-earth-800 font-bold">
+            <i class="fa-solid fa-cloud-sun mr-1"></i>{{ daysList[activeDayIndex].locationName }} 天氣預報
+          </span>
+          <span v-if="daysList[activeDayIndex].altitude" 
+                class="px-2 py-0.5 bg-earth-300/80 text-earth-900 rounded-md text-[10px] font-semibold border border-earth-400/50 flex items-center">
+            <i class="fa-solid fa-mountain mr-1 text-earth-700"></i>海拔 {{ daysList[activeDayIndex].altitude }}m
+          </span>
         </div>
+    
+        <!-- 氣溫顯示 -->
         <div class="text-xl font-bold text-earth-900">
           {{ currentWeather.tempMax }}°C <span class="text-xs text-earth-700">/ {{ currentWeather.tempMin }}°C</span>
         </div>
-        <div class="text-xs text-earth-800 mt-1">{{ currentWeather.condition }} · 風速 {{ currentWeather.windspeed }} km/h</div>
+    
+        <!-- 天氣狀況與風速 -->
+        <div class="text-xs text-earth-800 mt-1">
+          {{ currentWeather.condition }} · 風速 {{ currentWeather.windspeed }} km/h
+        </div>
       </div>
+    
+      <!-- 天氣 Icon -->
       <div class="text-3xl text-earth-800">
         <i :class="currentWeather.icon"></i>
       </div>
@@ -313,17 +339,17 @@
       ];
 
       const daysList = ref([
-        { day: 0, date: '10/16', locationName: '西寧', lat: 36.62, lon: 101.77, title: '澳門 -> 上海', destinations: '轉機', hotel: '西寧市區飯店' },
-        { day: 1, date: '10/17', locationName: '共和/青海湖', lat: 36.58, lon: 100.62, title: '上海 -> 西寧 -> 青海湖', destinations: '青海湖日月山、日月亭', hotel: '共和縣飯店' },
-        { day: 2, date: '10/18', locationName: '德令哈', lat: 37.37, lon: 97.36, title: '青海湖 -> 德令哈', destinations: '茶卡鹽湖、柏樹山', hotel: '德令哈市區飯店' },
-        { day: 3, date: '10/19', locationName: '大柴旦', lat: 37.85, lon: 95.36, title: '德令哈 -> 大柴旦', destinations: '察爾汗鹽湖、翡翠湖', hotel: '大柴旦飯店' },
-        { day: 4, date: '10/20', locationName: '水上雅丹', lat: 37.52, lon: 93.91, title: '大柴旦 -> 水上雅丹', destinations: '烏素特水上雅丹、雙色湖', hotel: '雅丹營地/酒店' },
-        { day: 5, date: '10/21', locationName: '冷湖鎮', lat: 38.73, lon: 93.33, title: '水上雅丹 -> 黑湖山 -> 冷湖鎮', destinations: '黑獨山、石油小鎮', hotel: '冷湖鎮飯店' },
-        { day: 6, date: '10/22', locationName: '敦煌', lat: 40.14, lon: 94.66, title: '敦煌', destinations: '莫高窟、鳴沙山月牙泉', hotel: '敦煌市區飯店' },
-        { day: 7, date: '10/23', locationName: '酒泉', lat: 39.73, lon: 98.49, title: '敦煌 -> 酒泉', destinations: '天下第一雄關、長城第一墩', hotel: '酒泉飯店' },
-        { day: 8, date: '10/24', locationName: '張掖', lat: 38.93, lon: 100.45, title: '酒泉 -> 張掖', destinations: '七彩丹霞景區', hotel: '張掖飯店' },
-        { day: 9, date: '10/25', locationName: '祁連', lat: 38.17, lon: 100.24, title: '張掖 -> 祁連', destinations: '卓爾山、祁連大草原', hotel: '祁連縣飯店' },
-        { day: 10, date: '10/26', locationName: '西寧', lat: 36.62, lon: 101.77, title: '祁連 -> 西寧 -> 上海 -> 澳門', destinations: '返程機場', hotel: '溫馨的家' }
+        { day: 0, date: '10/16', locationName: '澳門/上海', lat: 31.23, lon: 121.47, altitude: 4, title: '澳門 -> 上海', destinations: '', hotel: '' },
+        { day: 1, date: '10/17', locationName: '青海湖', lat: 36.58, lon: 100.62, altitude: 3200, title: '上海 -> 西寧 -> 青海湖', destinations: '', hotel: '' },
+        { day: 2, date: '10/18', locationName: '德令哈', lat: 37.37, lon: 97.36, altitude: 2980, title: '青海湖 -> 德令哈', destinations: '', hotel: '' },
+        { day: 3, date: '10/19', locationName: '大柴旦', lat: 37.85, lon: 95.36, altitude: 3170, title: '德令哈 -> 大柴旦', destinations: '', hotel: '' },
+        { day: 4, date: '10/20', locationName: '水上雅丹', lat: 37.52, lon: 93.91, altitude: 2680, title: '大柴旦 -> 水上雅丹', destinations: '', hotel: '' },
+        { day: 5, date: '10/21', locationName: '冷湖鎮', lat: 38.74, lon: 93.33, altitude: 2730, title: '水上雅丹 -> 黑獨山 -> 冷湖鎮', destinations: '', hotel: '' },
+        { day: 6, date: '10/22', locationName: '敦煌', lat: 40.14, lon: 94.66, altitude: 1140, title: '敦煌深度遊', destinations: '', hotel: '' },
+        { day: 7, date: '10/23', locationName: '酒泉', lat: 39.73, lon: 98.49, altitude: 1470, title: '敦煌 -> 酒泉', destinations: '', hotel: '' },
+        { day: 8, date: '10/24', locationName: '張掖', lat: 38.93, lon: 100.45, altitude: 1480, title: '酒泉 -> 張掖', destinations: '', hotel: '' },
+        { day: 9, date: '10/25', locationName: '祁連', lat: 38.17, lon: 100.24, altitude: 2780, title: '張掖 -> 祁連', destinations: '', hotel: '' },
+        { day: 10, date: '10/26', locationName: '西寧', lat: 36.62, lon: 101.77, altitude: 2260, title: '祁連 -> 西寧 -> 返程', destinations: '', hotel: '' }
       ]);
 
       const rawScheduleData = ref({});
@@ -389,7 +415,7 @@
       });
 
       // 動態匯總行程路線總覽
-      // ✅ 動態匯總：精準抓取「入住」或當天「最後一個」飯店地點
+      // ✅ 動態匯總：精準抓取「入住」或當天「最後一個」飯店地點, 當該類別無資料時設為空字串 ''
       const timelineSummary = computed(() => {
         return daysList.value.map((dayItem, index) => {
           const dayData = rawScheduleData.value[index] || 
@@ -406,35 +432,32 @@
             .map(item => item.location || item.description)
             .filter(Boolean);
       
-          // 2. 抓取住宿：優先尋找描述 (description) 包含「入住」的項目
+          // 2. 抓取住宿：優先尋找描述包含「入住」的項目
           let hotelItem = dayData.find(item => {
             const desc = item.description ? String(item.description) : '';
             return desc.includes('入住');
           });
       
-          // 如果沒寫「入住」，則反向尋找當天「最後一個」標註 🏨 / 酒店 的項目 (排除早上的退宿)
+          // 若未寫「入住」，反向尋找當天最後一個 🏨 / 酒店 項目
           if (!hotelItem) {
             const hotelList = dayData.filter(item => {
               const cat = item.category ? String(item.category) : '';
               return cat.includes('🏨') || cat.includes('酒店') || cat.includes('住宿') || cat.includes('飯店');
             });
             if (hotelList.length > 0) {
-              hotelItem = hotelList[hotelList.length - 1]; // 取最後一個
+              hotelItem = hotelList[hotelList.length - 1];
             }
           }
       
-          // 設定顯示字串
-          const destinationsText = spots.length > 0 ? spots.join('、') : (dayData.length > 0 ? '無特定景點' : dayItem.destinations);
-          const hotelText = (hotelItem && hotelItem.location) ? hotelItem.location : dayItem.hotel;
-      
+          // 當沒資料時直接賦值空字串 ''，不顯示任何預設資訊
           return {
             ...dayItem,
-            destinations: destinationsText,
-            hotel: hotelText
+            destinations: spots.length > 0 ? spots.join('、') : '',
+            hotel: (hotelItem && hotelItem.location) ? hotelItem.location : ''
           };
         });
       });
-
+      
       const currentDaySchedule = computed(() => rawScheduleData.value[activeDayIndex.value] || []);
 
       // 調用 Open-Meteo API 獲取動態天氣數據
