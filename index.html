@@ -11,8 +11,7 @@
   <!-- FontAwesome Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <!-- Google Fonts: Noto Serif TC for Museum Guide Style -->
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;600;700&family=Sans-serif&display=swap" rel="stylesheet">
-
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;600;700&display=swap" rel="stylesheet">
 
   <script>
     tailwind.config = {
@@ -71,17 +70,17 @@
 
   <!-- 頁面導航 Tab (行程總覽 / 每日行程) -->
   <nav class="flex border-b border-earth-300 bg-earth-100 sticky top-0 z-30 shadow-sm">
-  <button @click="currentView = 'overview'" 
-          :class="['flex-1 py-3 flex items-center justify-center font-bold text-sm transition-all', currentView === 'overview' ? 'text-earth-900 border-b-2 border-earth-800 bg-earth-50' : 'text-earth-500 hover:text-earth-700']">
-    <i class="fa-solid fa-compass mr-2"></i>
-    <span>行程總覽</span>
-  </button>
-  <button @click="currentView = 'daily'" 
-          :class="['flex-1 py-3 flex items-center justify-center font-bold text-sm transition-all', currentView === 'daily' ? 'text-earth-900 border-b-2 border-earth-800 bg-earth-50' : 'text-earth-500 hover:text-earth-700']">
-    <i class="fa-solid fa-calendar-day mr-2"></i>
-    <span>每日行程詳情</span>
-  </button>
-</nav>
+    <button @click="currentView = 'overview'" 
+            :class="['flex-1 py-3 flex items-center justify-center font-bold text-sm transition-all', currentView === 'overview' ? 'text-earth-900 border-b-2 border-earth-800 bg-earth-50' : 'text-earth-500 hover:text-earth-700']">
+      <i class="fa-solid fa-compass mr-2"></i>
+      <span>行程總覽</span>
+    </button>
+    <button @click="currentView = 'daily'" 
+            :class="['flex-1 py-3 flex items-center justify-center font-bold text-sm transition-all', currentView === 'daily' ? 'text-earth-900 border-b-2 border-earth-800 bg-earth-50' : 'text-earth-500 hover:text-earth-700']">
+      <i class="fa-solid fa-calendar-day mr-2"></i>
+      <span>每日行程詳情</span>
+    </button>
+  </nav>
 
   <!-- ==================== 頁面一：行程總覽 (Overview Dashboard) ==================== -->
   <main v-if="currentView === 'overview'" class="p-4 md:p-8 space-y-6">
@@ -105,8 +104,8 @@
     <!-- 途經主要站點 -->
     <section class="bg-earth-100/70 p-5 rounded-2xl border border-earth-300">
       <h3 class="text-base font-bold text-earth-900 mb-3 flex items-center">
-        <i class="fa-solid fa-map-location-dot text-earth-700 mr-2">
-        途經主要站點
+        <i class="fa-solid fa-map-location-dot text-earth-700 mr-2"></i>
+        <span>途經主要站點</span>
       </h3>
       <div class="flex flex-wrap gap-2">
         <span v-for="spot in keySpots" :key="spot" 
@@ -119,8 +118,8 @@
     <!-- 行程路線時間軸 (Vertical Timeline Summary) -->
     <section class="bg-earth-50 p-5 rounded-2xl border border-earth-300">
       <h3 class="text-base font-bold text-earth-900 mb-4 flex items-center">
-        <i class="fa-solid fa-timeline text-earth-700 mr-2">
-        行程路線總覽
+        <i class="fa-solid fa-timeline text-earth-700 mr-2"></i>
+        <span>行程路線總覽</span>
       </h3>
       <div class="relative pl-6 border-l-2 border-earth-300 space-y-6">
         <div v-for="(day, index) in timelineSummary" :key="index" class="relative group cursor-pointer" @click="selectDay(index)">
@@ -146,7 +145,7 @@
       <button v-for="(day, index) in daysList" :key="index"
               @click="activeDayIndex = index"
               :class="['flex-shrink-0 px-4 py-2 rounded-xl text-xs font-bold transition-all', 
-                       activeDayIndex === index ? 'bg-earth-800 text-earth-100 shadow-md' : 'bg-earth-200 text-earth-700 hover:bg-earth-300']">
+                        activeDayIndex === index ? 'bg-earth-800 text-earth-100 shadow-md' : 'bg-earth-200 text-earth-700 hover:bg-earth-300']">
         DAY {{ index }}
       </button>
     </div>
@@ -179,7 +178,7 @@
         </div>
 
         <!-- 分類 1: ✈️ 航班卡片 -->
-        <div v-if="item.category.includes('✈')" class="space-y-1">
+        <div v-if="item.category && item.category.includes('✈')" class="space-y-1">
           <div class="font-bold text-base text-earth-900 flex items-center justify-between">
             <span>{{ item.location }}</span>
             <a :href="'https://www.google.com/search?q=' + encodeURIComponent(item.description)" target="_blank" 
@@ -191,7 +190,7 @@
         </div>
 
         <!-- 分類 2: 📍 景點卡片 -->
-        <div v-else-if="item.category.includes('📍')" class="space-y-1">
+        <div v-else-if="item.category && item.category.includes('📍')" class="space-y-1">
           <div class="font-bold text-base text-earth-900 flex items-center justify-between">
             <span>{{ item.location }}</span>
             <a :href="'https://uri.amap.com/search?keyword=' + encodeURIComponent(item.location)" target="_blank" 
@@ -203,7 +202,7 @@
         </div>
 
         <!-- 分類 3: 🚗 行車資訊卡片 -->
-        <div v-else-if="item.category.includes('🚗')" class="space-y-1 bg-earth-200/50 p-2.5 rounded-lg border border-earth-300/60">
+        <div v-else-if="item.category && item.category.includes('🚗')" class="space-y-1 bg-earth-200/50 p-2.5 rounded-lg border border-earth-300/60">
           <div class="font-bold text-sm text-earth-900 flex justify-between">
             <span><i class="fa-solid fa-car mr-1 text-earth-700"></i>行車數據</span>
             <span class="text-xs text-plateau-red font-bold">{{ item.distance }} km</span>
@@ -215,7 +214,7 @@
         </div>
 
         <!-- 分類 4: 🏨 住宿卡片 -->
-        <div v-else-if="item.category.includes('🏨')" class="space-y-1">
+        <div v-else-if="item.category && item.category.includes('🏨')" class="space-y-1">
           <div class="font-bold text-base text-earth-900 flex items-center justify-between">
             <span>{{ item.location }}</span>
             <a :href="'https://uri.amap.com/search?keyword=' + encodeURIComponent(item.location)" target="_blank" 
@@ -227,7 +226,7 @@
         </div>
 
         <!-- 分類 5: 🍚 美食卡片 -->
-        <div v-else-if="item.category.includes('🍚')" class="space-y-1">
+        <div v-else-if="item.category && item.category.includes('🍚')" class="space-y-1">
           <div class="font-bold text-base text-earth-900">
             <span>{{ item.location }}</span>
           </div>
@@ -286,22 +285,25 @@
         { day: 10, date: '10/26', locationName: '西寧', lat: 36.62, lon: 101.77, title: '祁連 -> 西寧 -> 返程', destinations: '門源花海路段、返程機場', hotel: '溫馨的家' }
       ]);
 
-      // 每日行程資料容器 (初始為空，將由 API 動態填充)
+      // 每日行程資料容器
       const rawScheduleData = ref({});
 
       // 載入 Google Sheets 資料
       async function fetchSheetData() {
-      try {
-        const response = await fetch('YOUR_GAS_WEB_APP_URL', {
-          method: 'GET',
-          redirect: 'follow'
-        });
-        const data = await response.json();
-        // 賦值給你的 rawScheduleData
-      } catch (error) {
-        console.error("無法讀取 Google Sheets 資料:", error);
+        try {
+          isLoading.value = true;
+          const response = await fetch(GAS_API_URL, {
+            method: 'GET',
+            redirect: 'follow'
+          });
+          const data = await response.json();
+          rawScheduleData.value = data; // 寫入資料
+        } catch (error) {
+          console.error("無法讀取 Google Sheets 資料:", error);
+        } finally {
+          isLoading.value = false;
+        }
       }
-    }
 
       // 計算總公里數
       const totalDistance = computed(() => {
@@ -385,7 +387,9 @@
       });
 
       onMounted(() => {
-        fetchSheetData(); // 頁面載入時自動拉取 Google Sheets 資料
+        fetchSheetData();
+        // 預設抓取 Day 0 天氣
+        if (daysList.value[0]) fetchWeatherData(daysList.value[0].lat, daysList.value[0].lon);
       });
 
       return {
