@@ -389,47 +389,43 @@
       });
 
       // 動態匯總行程路線總覽
-      // ✅ 升級版：支援多種分類標記與彈性索取 Day 資料
+      // ✅ 動態匯總：精準抓取「入住」或當天「最後一個」飯店地點
       const timelineSummary = computed(() => {
         return daysList.value.map((dayItem, index) => {
-          // 兼顧 key 為數字 0/1/2... 或字串 "0"/"1"/"2"... 或 "Day 0"
           const dayData = rawScheduleData.value[index] || 
                           rawScheduleData.value[String(index)] || 
                           rawScheduleData.value[`Day ${index}`] || 
                           rawScheduleData.value[`Day${index}`] || [];
       
-          // 1. 抓取景點 (分類包含 📍 或 景點)
+          // 1. 抓取景點
           const spots = dayData
             .filter(item => {
               const cat = item.category ? String(item.category) : '';
               return cat.includes('📍') || cat.includes('景點');
             })
-            .map(item => item.location)
+            .map(item => item.location || item.description)
             .filter(Boolean);
       
-          // 2. 抓取住宿 (分類包含 🏨、酒店、住宿、飯店)
-          const hotelItem = dayData.find(item => {
-            const cat = item.category ? String(item.category) : '';
-            return cat.includes('🏨') || cat.includes('酒店') || cat.includes('住宿') || cat.includes('飯店');
+          // 2. 抓取住宿：優先尋找描述 (description) 包含「入住」的項目
+          let hotelItem = dayData.find(item => {
+            const desc = item.description ? String(item.description) : '';
+            return desc.includes('入住');
           });
       
-          // 取得景點字串：如果有動態景點就用動態的，沒有就降級顯示預設
-          const destinationsText = spots.length > 0 ? spots.join('、') : (dayData.length > 0 ? '無特定景點' : dayItem.destinations);
-      
-          // 取得住宿字串：優先使用動態飯店名稱
-          let hotelText = dayItem.hotel;
-          if (hotelItem && hotelItem.location) {
-            hotelText = hotelItem.location;
-          } else if (dayData.length > 0) {
-            // 若表格有資料但未標註住宿，自動尋找描述中包含「入住/酒店/飯店/民宿」的項目
-            const matchHotelInDesc = dayData.find(item => {
-              const text = (item.location || '') + (item.description || '');
-              return text.includes('入住') || text.includes('酒店') || text.includes('飯店') || text.includes('民宿');
+          // 如果沒寫「入住」，則反向尋找當天「最後一個」標註 🏨 / 酒店 的項目 (排除早上的退宿)
+          if (!hotelItem) {
+            const hotelList = dayData.filter(item => {
+              const cat = item.category ? String(item.category) : '';
+              return cat.includes('🏨') || cat.includes('酒店') || cat.includes('住宿') || cat.includes('飯店');
             });
-            if (matchHotelInDesc) {
-              hotelText = matchHotelInDesc.location || hotelText;
+            if (hotelList.length > 0) {
+              hotelItem = hotelList[hotelList.length - 1]; // 取最後一個
             }
           }
+      
+          // 設定顯示字串
+          const destinationsText = spots.length > 0 ? spots.join('、') : (dayData.length > 0 ? '無特定景點' : dayItem.destinations);
+          const hotelText = (hotelItem && hotelItem.location) ? hotelItem.location : dayItem.hotel;
       
           return {
             ...dayItem,
