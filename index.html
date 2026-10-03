@@ -171,13 +171,13 @@
       <div v-for="(item, idx) in currentDaySchedule" :key="idx" 
            class="bg-earth-100 rounded-xl p-4 border border-earth-300 shadow-sm transition-all hover:shadow-md">
         
-        <!-- 頂部欄：僅顯示 formatted 時間 -->
+        <!-- 頂部時間標籤 -->
         <div class="flex items-center justify-between border-b border-earth-200 pb-2 mb-2">
           <span class="text-xs font-bold text-earth-800">
             <i class="fa-regular fa-clock mr-1"></i>{{ formatTime(item.time) }}
           </span>
         </div>
-    
+
         <!-- 分類 1: ✈️️ 航班卡片 -->
         <div v-if="item.category && item.category.includes('✈')" class="space-y-1">
           <div class="font-bold text-base text-earth-900 flex items-center justify-between">
@@ -192,7 +192,7 @@
           </div>
           <p class="text-xs text-earth-700 pl-7">{{ item.description }}</p>
         </div>
-    
+
         <!-- 分類 2: 📍 景點卡片 -->
         <div v-else-if="item.category && item.category.includes('📍')" class="space-y-1">
           <div class="font-bold text-base text-earth-900 flex items-center justify-between">
@@ -207,7 +207,7 @@
           </div>
           <p class="text-xs text-earth-700 pl-7">{{ item.description }}</p>
         </div>
-    
+
         <!-- 分類 3: 🚗 行車資訊卡片 -->
         <div v-else-if="item.category && item.category.includes('🚗')" class="space-y-1 bg-earth-200/50 p-2.5 rounded-lg border border-earth-300/60">
           <div class="font-bold text-sm text-earth-900 flex justify-between items-center">
@@ -222,7 +222,7 @@
             <span>{{ item.description }}</span>
           </div>
         </div>
-    
+
         <!-- 分類 4: 🏨 住宿卡片 -->
         <div v-else-if="item.category && item.category.includes('🏨')" class="space-y-1">
           <div class="font-bold text-base text-earth-900 flex items-center justify-between">
@@ -237,7 +237,7 @@
           </div>
           <p class="text-xs text-earth-700 pl-7">{{ item.description }}</p>
         </div>
-    
+
         <!-- 分類 5: 🍚 美食卡片 -->
         <div v-else-if="item.category && item.category.includes('🍚')" class="space-y-1">
           <div class="font-bold text-base text-earth-900 flex items-center">
@@ -246,7 +246,7 @@
           </div>
           <p class="text-xs text-earth-700 pl-7">{{ item.description }}</p>
         </div>
-    
+
         <!-- 通用預設卡片 -->
         <div v-else class="space-y-1">
           <div class="font-bold text-base text-earth-900 flex items-center">
@@ -255,7 +255,7 @@
           </div>
           <p class="text-xs text-earth-700 pl-7">{{ item.description }}</p>
         </div>
-    
+
       </div>
     </div>
 
@@ -272,22 +272,19 @@
 
   createApp({
     setup() {
-      const GAS_API_URL = "https://script.google.com/macros/s/AKfycbyroyZjzILbqN0jvePe6h0znGcJ0UFrQerr0RKSvdUpCTa8BhuLUul8-fbJGXi7Tv7F/exec";
+      const GAS_API_URL = "https://script.google.com/macros/s/AKfycbxlYcT0efsfuVPveLiffe9VK65wDEpM0KpWyJiMFHR7ZIURWSC-zTU5W3Y5IP3mA-lP/exec";
       const currentView = ref('overview');
       const activeDayIndex = ref(0);
       const currentWeather = ref(null);
       const isLoading = ref(true);
 
-      // 手勢觸發變數
       let touchStartX = 0;
 
-      // 主要站點
       const keySpots = [
         '青海湖', '柏樹山', '茶卡鹽湖', '察爾汗鹽湖', 
         '水上雅丹', '黑獨山', '鳴沙山月牙泉', '莫高窟', '七彩丹霞', '卓爾山'
       ];
 
-      // 每日概要數據與天氣定位經緯度 (Open-Meteo API 相容)
       const daysList = ref([
         { day: 0, date: '10/16', locationName: '西寧', lat: 36.62, lon: 101.77, title: '抵達西寧', destinations: '集合、入住飯店', hotel: '西寧市區飯店' },
         { day: 1, date: '10/17', locationName: '共和/青海湖', lat: 36.58, lon: 100.62, title: '西寧 -> 青海湖', destinations: '青海湖日月山、日月亭', hotel: '共和縣飯店' },
@@ -302,24 +299,21 @@
         { day: 10, date: '10/26', locationName: '西寧', lat: 36.62, lon: 101.77, title: '祁連 -> 西寧 -> 返程', destinations: '門源花海路段、返程機場', hotel: '溫馨的家' }
       ]);
 
-      // 每日行程資料容器
       const rawScheduleData = ref({});
 
       // 載入 Google Sheets 資料
       async function fetchSheetData() {
         try {
           isLoading.value = true;
-          // 使用 CORS 模式發起請求
           const response = await fetch(GAS_API_URL, {
             method: 'GET',
-            mode: 'cors',
             redirect: 'follow'
           });
-      
+
           if (!response.ok) {
             throw new Error(`HTTP 錯誤！狀態碼：${response.status}`);
           }
-      
+
           const data = await response.json();
           rawScheduleData.value = data;
           console.log("成功讀取 Google Sheets 資料:", data);
@@ -330,18 +324,20 @@
         }
       }
 
+      // 時間格式化清洗：徹底將 ISO Date 或時間字串格式化為 HH:mm
       const formatTime = (timeStr) => {
-      if (!timeStr) return '';
-      if (typeof timeStr === 'string' && timeStr.includes('T')) {
-        const date = new Date(timeStr);
-        if (!isNaN(date.getTime())) {
-          const hh = String(date.getHours()).padStart(2, '0');
-          const mm = String(date.getMinutes()).padStart(2, '0');
-          return `${hh}:${mm}`;
+        if (!timeStr) return '';
+        const str = String(timeStr).trim();
+        if (str.includes('T')) {
+          const date = new Date(str);
+          if (!isNaN(date.getTime())) {
+            const hh = String(date.getHours()).padStart(2, '0');
+            const mm = String(date.getMinutes()).padStart(2, '0');
+            return `${hh}:${mm}`;
+          }
         }
-      }
-      return timeStr;
-    };
+        return str;
+      };
 
       // 計算總公里數
       const totalDistance = computed(() => {
@@ -356,18 +352,16 @@
         return Math.round(sum);
       });
 
-      // ✅ 動態從 rawScheduleData (Google Sheets) 擷取每日景點與飯店
+      // 動態匯總行程路線總覽
       const timelineSummary = computed(() => {
         return daysList.value.map((dayItem, index) => {
           const dayData = rawScheduleData.value[index] || [];
           
-          // 1. 抓取該 Day 分類為 📍 (景點) 的地點名稱
           const spots = dayData
             .filter(item => item.category && item.category.includes('📍'))
             .map(item => item.location)
             .filter(Boolean);
             
-          // 2. 抓取該 Day 分類為 🏨 (住宿) 的飯店名稱
           const hotelItem = dayData.find(item => item.category && item.category.includes('🏨'));
           
           return {
@@ -377,6 +371,7 @@
           };
         });
       });
+
       const currentDaySchedule = computed(() => rawScheduleData.value[activeDayIndex.value] || []);
 
       // 調用 Open-Meteo API 獲取動態天氣數據
@@ -398,7 +393,6 @@
         }
       };
 
-      // WMO 天氣代碼轉換
       const getWeatherCondition = (code) => {
         if (code === 0) return '晴朗';
         if (code <= 3) return '多雲/晴間多雲';
@@ -421,7 +415,6 @@
         currentView.value = 'daily';
       };
 
-      // 手勢滑動處理
       const handleTouchStart = (e) => {
         touchStartX = e.touches[0].clientX;
       };
@@ -430,11 +423,11 @@
         const touchEndX = e.changedTouches[0].clientX;
         const diffX = touchStartX - touchEndX;
 
-        if (Math.abs(diffX) > 50) { // 滑動門檻 50px
+        if (Math.abs(diffX) > 50) {
           if (diffX > 0 && activeDayIndex.value < daysList.value.length - 1) {
-            activeDayIndex.value++; // 向左滑 -> 下一天
+            activeDayIndex.value++;
           } else if (diffX < 0 && activeDayIndex.value > 0) {
-            activeDayIndex.value--; // 向右滑 -> 上一天
+            activeDayIndex.value--;
           }
         }
       };
@@ -446,7 +439,6 @@
 
       onMounted(() => {
         fetchSheetData();
-        // 預設抓取 Day 0 天氣
         if (daysList.value[0]) fetchWeatherData(daysList.value[0].lat, daysList.value[0].lon);
       });
 
@@ -461,6 +453,7 @@
         timelineSummary,
         currentDaySchedule,
         currentWeather,
+        formatTime,
         selectDay,
         handleTouchStart,
         handleTouchEnd
