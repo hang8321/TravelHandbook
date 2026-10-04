@@ -161,35 +161,35 @@
       </button>
     </div>
 
-    <!-- 該 Day 天氣與海拔卡片（指定莫蘭迪綠與暖米白配色） -->
+    <!-- 該 Day 天氣與海拔卡片（對齊總天數卡片邊框與深綠大地色系） -->
     <section v-if="currentWeather" 
-             class="bg-[#F2EFE9] border-2 border-[#9CAF88] p-4 rounded-2xl mb-5 shadow-sm flex items-center justify-between transition-all">
+             class="bg-[#FDFBF7] p-4 rounded-xl border border-[#3B4A2D] mb-5 shadow-sm flex items-center justify-between transition-all">
       <div>
         <!-- 位置名稱與海拔標籤 -->
         <div class="flex items-center space-x-2 mb-1.5">
-          <span class="text-xs text-[#9CAF88] font-bold flex items-center">
-            <i class="fa-solid fa-cloud-sun mr-1 text-[#9CAF88]"></i>{{ daysList[activeDayIndex].locationName }} 天氣預報
+          <span class="text-xs text-[#3B4A2D] font-bold flex items-center">
+            <i class="fa-solid fa-cloud-sun mr-1 text-[#3B4A2D]"></i>{{ daysList[activeDayIndex].locationName }} 天氣預報
           </span>
           <span v-if="daysList[activeDayIndex].altitude" 
-                class="px-2 py-0.5 bg-[#9CAF88] text-[#F2EFE9] rounded-md text-[10px] font-semibold flex items-center shadow-xs">
-            <i class="fa-solid fa-mountain mr-1 text-[#F2EFE9]"></i>海拔 {{ daysList[activeDayIndex].altitude }}m
+                class="px-2 py-0.5 bg-[#3B4A2D] text-[#FDFBF7] rounded-md text-[10px] font-semibold flex items-center shadow-xs">
+            <i class="fa-solid fa-mountain mr-1 text-[#FDFBF7]"></i>海拔 {{ daysList[activeDayIndex].altitude }}m
           </span>
         </div>
     
         <!-- 氣溫顯示 -->
-        <div class="text-xl font-bold text-[#9CAF88]">
-          {{ currentWeather.tempMax }}°C <span class="text-xs text-[#9CAF88]/80 font-normal">/ {{ currentWeather.tempMin }}°C</span>
+        <div class="text-xl font-bold text-[#3B4A2D]">
+          {{ currentWeather.tempMax }}°C <span class="text-xs text-[#3B4A2D]/80 font-normal">/ {{ currentWeather.tempMin }}°C</span>
         </div>
     
         <!-- 天氣狀況與風速 -->
-        <div class="text-xs text-[#9CAF88] mt-1 font-medium">
+        <div class="text-xs text-[#3B4A2D]/90 mt-1 font-medium">
           {{ currentWeather.condition }} · 風速 {{ currentWeather.windspeed }} km/h
         </div>
       </div>
     
-      <!-- 天氣 Icon（強制設定 #9CAF88，避免被原本 API 的藍色圖示覆蓋） -->
-      <div class="text-3xl filter drop-shadow-xs" style="color: #9CAF88 !important;">
-        <i :class="currentWeather.icon" style="color: #9CAF88 !important;"></i>
+      <!-- 天氣 Icon（使用內聯樣式強制顏色為 #3B4A2D，防止被預設藍色覆蓋） -->
+      <div class="text-3xl text-[#3B4A2D] filter drop-shadow-xs">
+        <i :class="currentWeather.icon" style="color: #3B4A2D !important;"></i>
       </div>
     </section>
 
