@@ -220,18 +220,24 @@
     
           <!-- ✈ 航班（無時間） -->
           <div v-else-if="item.category && (item.category.includes('✈') || item.category.includes('航班'))" class="space-y-1">
-            <div class="font-bold text-base text-earth-900 flex items-center justify-between">
-              <span class="flex items-center">
-                <span class="mr-2">{{ item.category }}</span>
-                <span>{{ getLocationTitle(item) }}</span>
-              </span>
-              <!-- 若沒有填寫航班編號則直接隱藏 -->
-              <a v-if="item.flightNo"
-                 :href="'https://www.google.com/search?q=' + encodeURIComponent(item.flightNo)" target="_blank" 
-                 class="text-xs text-plateau-blue font-normal underline flex items-center">
-                 <i class="fa-solid fa-plane-departure mr-1"></i>{{ item.flightNo }}
+            <!-- 1. 地點 -->
+            <div class="font-bold text-base text-earth-900 flex items-center">
+              <span class="mr-2">{{ item.category }}</span>
+              <span>{{ getLocationTitle(item) }}</span>
+            </div>
+            
+            <!-- 2. 航班編號（位於地點與描述中間） -->
+            <div class="text-xs text-earth-700 pl-7 flex items-center space-x-1" v-if="item.flightNo">
+              <span>航班編號:</span>
+              <a :href="'https://www.google.com/search?q=' + encodeURIComponent(item.flightNo)" 
+                 target="_blank" 
+                 class="underline font-medium hover:opacity-80 flex items-center inline-flex">
+                 <span>{{ item.flightNo }}</span>
+                 <i class="fa-solid fa-arrow-up-right-from-square text-[10px] ml-1"></i>
               </a>
             </div>
+    
+            <!-- 3. 描述 -->
             <p class="text-xs text-earth-700 pl-7" v-if="item.description">{{ item.description }}</p>
           </div>
     
@@ -288,18 +294,24 @@
     
           <!-- ✈ 航班卡片（有時間） -->
           <div v-if="item.category && (item.category.includes('✈') || item.category.includes('航班'))" class="space-y-1">
-            <div class="font-bold text-base text-earth-900 flex items-center justify-between">
-              <span class="flex items-center">
-                <span class="mr-2">{{ item.category }}</span>
-                <span>{{ getLocationTitle(item) }}</span>
-              </span>
-              <!-- 若沒有填寫航班編號則直接隱藏 -->
-              <a v-if="item.flightNo"
-                 :href="'https://www.google.com/search?q=' + encodeURIComponent(item.flightNo)" target="_blank" 
-                 class="text-xs text-plateau-blue font-normal underline flex items-center">
-                 <i class="fa-solid fa-plane-departure mr-1"></i>{{ item.flightNo }}
+            <!-- 1. 地點 -->
+            <div class="font-bold text-base text-earth-900 flex items-center">
+              <span class="mr-2">{{ item.category }}</span>
+              <span>{{ getLocationTitle(item) }}</span>
+            </div>
+    
+            <!-- 2. 航班編號（位於地點與描述中間） -->
+            <div class="text-xs text-earth-700 pl-7 flex items-center space-x-1" v-if="item.flightNo">
+              <span>航班編號:</span>
+              <a :href="'https://www.google.com/search?q=' + encodeURIComponent(item.flightNo)" 
+                 target="_blank" 
+                 class="underline font-medium hover:opacity-80 flex items-center inline-flex">
+                 <span>{{ item.flightNo }}</span>
+                 <i class="fa-solid fa-arrow-up-right-from-square text-[10px] ml-1"></i>
               </a>
             </div>
+    
+            <!-- 3. 描述 -->
             <p class="text-xs text-earth-700 pl-7" v-if="item.description">{{ item.description }}</p>
           </div>
     
@@ -326,7 +338,9 @@
             </div>
             <p class="text-xs text-earth-700 pl-7" v-if="item.location && item.description">{{ item.description }}</p>
           </div>
+    
         </div>
+    
       </template>
     </div>
   </main>
