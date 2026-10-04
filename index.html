@@ -61,7 +61,7 @@
     <div class="absolute inset-0 opacity-20 bg-[radial-gradient(#ba9a68_1px,transparent_1px)] [background-size:16px_16px]"></div>
     <div class="relative z-10 text-center">
       <div class="inline-block px-3 py-1 bg-earth-700/60 rounded-full text-xs text-earth-200 tracking-widest mb-2 border border-earth-500/40">
-        Travel Hand Book
+        Hang's Travel Hand Book
       </div>
       <h1 class="text-2xl md:text-4xl font-bold tracking-wider mb-2 text-earth-200">青海·甘肅大環線</h1>
       <p class="text-xs md:text-sm text-earth-300 font-light tracking-widest">2026.10.16 — 2026.10.26 (11 DAYS)</p>
@@ -97,7 +97,7 @@
       </div>
       <div class="col-span-2 md:col-span-1 bg-earth-100 p-4 rounded-xl border border-earth-300 text-center shadow-sm flex flex-col justify-center">
         <div class="text-xs text-earth-700 mb-1"><i class="fa-solid fa-mountain mr-1"></i>穿越地貌</div>
-        <div class="text-xs text-earth-800 font-semibold">鹽湖 · 雅丹 · 戈壁 · 沙丘 · 丹霞</div>
+        <div class="text-xs text-earth-800 font-semibold">鹽湖 · 雅丹 · 戈壁 · 沙丘 · 丹霞 · 雪山</div>
       </div>
     </div>
 
@@ -161,33 +161,34 @@
       </button>
     </div>
 
-    <!-- 該 Day 天氣與海拔卡片 -->
-    <section v-if="currentWeather" class="bg-gradient-to-r from-earth-200 to-earth-100 p-4 rounded-2xl border border-earth-300 mb-5 shadow-sm flex items-center justify-between">
+    <!-- 該 Day 天氣與海拔卡片（大地色系漸層配色） -->
+    <section v-if="currentWeather" 
+             class="bg-gradient-to-r from-[#EFE9DF] via-[#EAE1D3] to-[#E3D7C5] p-4 rounded-2xl border border-[#D5C5B1] mb-5 shadow-sm flex items-center justify-between transition-all">
       <div>
         <!-- 位置名稱與海拔標籤 -->
-        <div class="flex items-center space-x-2 mb-1">
-          <span class="text-xs text-earth-800 font-bold">
-            <i class="fa-solid fa-cloud-sun mr-1"></i>{{ daysList[activeDayIndex].locationName }} 天氣預報
+        <div class="flex items-center space-x-2 mb-1.5">
+          <span class="text-xs text-[#5C4A3E] font-bold flex items-center">
+            <i class="fa-solid fa-cloud-sun mr-1 text-[#8C6D58]"></i>{{ daysList[activeDayIndex].locationName }} 天氣預報
           </span>
           <span v-if="daysList[activeDayIndex].altitude" 
-                class="px-2 py-0.5 bg-earth-300/80 text-earth-900 rounded-md text-[10px] font-semibold border border-earth-400/50 flex items-center">
-            <i class="fa-solid fa-mountain mr-1 text-earth-700"></i>海拔 {{ daysList[activeDayIndex].altitude }}m
+                class="px-2 py-0.5 bg-[#DBCBB7]/80 text-[#4A3B31] rounded-md text-[10px] font-semibold border border-[#C5B39E] flex items-center shadow-xs">
+            <i class="fa-solid fa-mountain mr-1 text-[#7A5E4B]"></i>海拔 {{ daysList[activeDayIndex].altitude }}m
           </span>
         </div>
     
         <!-- 氣溫顯示 -->
-        <div class="text-xl font-bold text-earth-900">
-          {{ currentWeather.tempMax }}°C <span class="text-xs text-earth-700">/ {{ currentWeather.tempMin }}°C</span>
+        <div class="text-xl font-bold text-[#3D2E24]">
+          {{ currentWeather.tempMax }}°C <span class="text-xs text-[#7A6758] font-normal">/ {{ currentWeather.tempMin }}°C</span>
         </div>
     
         <!-- 天氣狀況與風速 -->
-        <div class="text-xs text-earth-800 mt-1">
+        <div class="text-xs text-[#6E5A4C] mt-1 font-medium">
           {{ currentWeather.condition }} · 風速 {{ currentWeather.windspeed }} km/h
         </div>
       </div>
     
-      <!-- 天氣 Icon -->
-      <div class="text-3xl text-earth-800">
+      <!-- 天氣 Icon（改為大地陶土棕色） -->
+      <div class="text-3xl text-[#8C6D58] filter drop-shadow-xs">
         <i :class="currentWeather.icon"></i>
       </div>
     </section>
