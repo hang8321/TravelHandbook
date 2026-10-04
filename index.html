@@ -218,6 +218,23 @@
             </div>
           </div>
     
+          <!-- ✈ 航班（無時間） -->
+          <div v-else-if="item.category && (item.category.includes('✈') || item.category.includes('航班'))" class="space-y-1">
+            <div class="font-bold text-base text-earth-900 flex items-center justify-between">
+              <span class="flex items-center">
+                <span class="mr-2">{{ item.category }}</span>
+                <span>{{ getLocationTitle(item) }}</span>
+              </span>
+              <!-- 若沒有填寫航班編號則直接隱藏 -->
+              <a v-if="item.flightNo"
+                 :href="'https://www.google.com/search?q=' + encodeURIComponent(item.flightNo)" target="_blank" 
+                 class="text-xs text-plateau-blue font-normal underline flex items-center">
+                 <i class="fa-solid fa-plane-departure mr-1"></i>{{ item.flightNo }}
+              </a>
+            </div>
+            <p class="text-xs text-earth-700 pl-7" v-if="item.description">{{ item.description }}</p>
+          </div>
+    
           <!-- 📍 景點（無時間） -->
           <div v-else-if="item.category && item.category.includes('📍')">
             <div class="font-bold text-base text-earth-900 flex items-center justify-between">
@@ -269,19 +286,21 @@
             </span>
           </div>
     
-          <!-- ✈ 航班卡片 -->
-          <div v-if="item.category && item.category.includes('✈')" class="space-y-1">
+          <!-- ✈ 航班卡片（有時間） -->
+          <div v-if="item.category && (item.category.includes('✈') || item.category.includes('航班'))" class="space-y-1">
             <div class="font-bold text-base text-earth-900 flex items-center justify-between">
               <span class="flex items-center">
                 <span class="mr-2">{{ item.category }}</span>
                 <span>{{ getLocationTitle(item) }}</span>
               </span>
-              <a :href="'https://www.google.com/search?q=' + encodeURIComponent(item.description || item.location)" target="_blank" 
+              <!-- 若沒有填寫航班編號則直接隱藏 -->
+              <a v-if="item.flightNo"
+                 :href="'https://www.google.com/search?q=' + encodeURIComponent(item.flightNo)" target="_blank" 
                  class="text-xs text-plateau-blue font-normal underline flex items-center">
-                 <i class="fa-solid fa-plane-departure mr-1"></i>航班資訊
+                 <i class="fa-solid fa-plane-departure mr-1"></i>{{ item.flightNo }}
               </a>
             </div>
-            <p class="text-xs text-earth-700 pl-7" v-if="item.location && item.description">{{ item.description }}</p>
+            <p class="text-xs text-earth-700 pl-7" v-if="item.description">{{ item.description }}</p>
           </div>
     
           <!-- 📍 景點卡片（有時間） -->
@@ -307,14 +326,10 @@
             </div>
             <p class="text-xs text-earth-700 pl-7" v-if="item.location && item.description">{{ item.description }}</p>
           </div>
-    
         </div>
-    
       </template>
     </div>
-    
   </main>
-
 </div>
 
 <script>
@@ -322,7 +337,7 @@
 
   createApp({
     setup() {
-      const GAS_API_URL = "https://script.google.com/macros/s/AKfycbxLkj3nXL9_hBtU03XabcFvWSu-Cuu7qTic6egLHW4XGxjk6LrMycyyXxGQiRIYa0Bc/exec";
+      const GAS_API_URL = "https://script.google.com/macros/s/AKfycbwn-WGR9Ogifjh0zMRppSEsLxE4vIWqwyefqA9Bym6yuQHOpXz3UsWBxgoQ-InH5q3s/exec";
       const currentView = ref('overview');
       const activeDayIndex = ref(0);
       const currentWeather = ref(null);
